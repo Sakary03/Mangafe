@@ -13,10 +13,10 @@ const AppHeader = () => {
   return (
     <Header className="fixed top-0 left-0 w-full z-50 bg-white px-6 shadow flex items-center justify-between">
       {/* Logo & Name */}
-      <div className="flex items-center gap-2 text-teal-600">
+      <Link to='/' className="flex items-center gap-2 text-teal-600">
         <HomeOutlined className="text-xl" />
         <span className="text-xl font-semibold">Mangaka</span>
-      </div>
+      </Link>
 
       {/* Nav + Buttons */}
       <div className="flex items-center gap-8">
@@ -39,9 +39,11 @@ const AppHeader = () => {
               Login
             </Button>
           </Link>
+          <Link to="/auth/register">
           <Button icon={<UserAddOutlined />} className="">
             Register
           </Button>
+          </Link>
         </Space>
       </div>
     </Header>

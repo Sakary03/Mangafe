@@ -83,7 +83,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Profile',
-      onClick: () => navigate('/admin/profile'),
+      onClick: () => navigate('/common/profile'),
     },
     {
       key: 'logout',

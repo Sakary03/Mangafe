@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import {
@@ -139,22 +140,22 @@ const MangaChapterList = () => {
 
       setLoading(true);
 
-      // In a real app, you would upload the images first to get URLs
-      // For demonstration, we'll create mock URLs
-      const mockPageUrls = pageFiles.map(
-        (_, index) =>
-          `https://picsum.photos/800/1200?random=${Date.now() + index}`,
-      );
-
-      const chapterData = {
-        pages: mockPageUrls,
-      };
+      // Create a FormData object to handle file uploads
+      const formData = new FormData();
+      formData.append('title', values.title);
+      formData.append('chapter_index', values.chapterIndex);
+      
+      // Append each image file to the FormData with the same key name
+      pageFiles.forEach((file, index) => {
+        // The backend expects multiple files with the same field name "pages"
+        formData.append('pages', file);
+      });
 
       if (modalType === 'add') {
-        await addChapter(Number(mangaId), values.chapterIndex, chapterData);
+        await addChapter(Number(mangaId), values.chapterIndex, formData);
         message.success('Chapter added successfully');
       } else {
-        await updateChapter(Number(mangaId), currentChapterIndex!, chapterData);
+        await updateChapter(Number(mangaId), currentChapterIndex!, formData);
         message.success('Chapter updated successfully');
       }
 

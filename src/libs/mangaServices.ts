@@ -6,21 +6,11 @@ export interface MangaRequestDTO {
   description: string;
   overview: string;
   genres: string[];
-  posterUrl: string;
-  backgroundUrl: string;
-}
-
-export interface CreateMangaPayload {
-  title: string;
-  author: string;
-  description: string;
-  overview: string;
-  genres: string[];
   poster: File | Blob;
   background: File | Blob;
 }
 
-export const createManga = async (payload: CreateMangaPayload) => {
+export const createManga = async (payload: MangaRequestDTO) => {
   const formData = new FormData();
 
   formData.append('title', payload.title);
@@ -40,7 +30,6 @@ export const createManga = async (payload: CreateMangaPayload) => {
       'Content-Type': 'multipart/form-data',
     },
   });
-
   return response.data;
 };
 
@@ -49,9 +38,9 @@ export const getMangaById = async (id: number) => {
   return response.data;
 };
 
-export const getAllManga = async (offset: number, limit: number) => {
+export const getAllManga = async (offset: number, limit: number, sortby: string, isAsc: boolean) => {
   const response = await api.get('/manga', {
-    params: { offset, limit },
+    params: { offset, limit, sortby, isAsc },
   });
   return response.data;
 };
@@ -74,8 +63,26 @@ export const searchManga = async (
   return response.data;
 };
 
-export const updateManga = async (id: number, data: MangaRequestDTO) => {
-  const response = await api.put(`/manga/update/${id}`, data);
+export const updateManga = async (id: number, payload: MangaRequestDTO) => {
+  const formData = new FormData();
+
+  formData.append('title', payload.title);
+  formData.append('author', payload.author);
+  formData.append('description', payload.description);
+  formData.append('overview', payload.overview);
+
+  payload.genres.forEach(genre => {
+    formData.append('genres', genre);
+  });
+
+  formData.append('poster', payload.poster);
+  formData.append('background', payload.background);
+
+  const response = await api.put(`/manga/update/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 

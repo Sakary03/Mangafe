@@ -2,7 +2,7 @@ import React from 'react';
 import { Layout, Menu, Button } from 'antd';
 import { HomeOutlined, LoginOutlined } from '@ant-design/icons';
 import { logoutUser } from '../../libs/api';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const { Header } = Layout;
 
@@ -18,10 +18,10 @@ const UserHeader = () => {
   return (
     <Header className="fixed top-0 left-0 w-full z-50 bg-white px-6 shadow flex items-center justify-between">
       {/* Logo & Name */}
-      <div className="flex items-center gap-2 text-teal-600">
+      <Link to='/' className="flex items-center gap-2 text-teal-600">
         <HomeOutlined className="text-xl" />
         <span className="text-xl font-semibold">Mangaka</span>
-      </div>
+      </Link>
 
       {/* Nav + Buttons */}
       <div className="flex items-center gap-8">

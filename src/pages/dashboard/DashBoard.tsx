@@ -42,9 +42,9 @@ const Dashboard = () => {
         // Mock data for demonstration
         setTimeout(() => {
           setStats({
-            totalMangas: 48,
-            totalUsers: 156,
-            totalChapters: 423,
+            totalMangas: 12,
+            totalUsers: 4,
+            totalChapters: 2,
           });
 
           setRecentMangas([

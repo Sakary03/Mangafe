@@ -9,7 +9,6 @@ import UserHeader from '../components/user/Header';
 const UserLayout: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col">
-      {console.log('Checking if user is logged in:', isLoggedIn())}
       {isLoggedIn() === true ? <UserHeader /> : <AppHeader />}
       <main className="flex-1">
         <Outlet />

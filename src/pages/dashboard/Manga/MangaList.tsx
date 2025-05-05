@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import {
@@ -97,7 +98,7 @@ const MangaList = () => {
     try {
       setLoading(true);
       setTimeout(async () => {
-        const response = await getAllManga((page - 1) * limit, limit);
+        const response = await getAllManga((page - 1) * limit, limit, 'createdAt', true);
         console.log('Fetched Manga: ', response);
         setData(response);
         setPagination({
@@ -177,8 +178,8 @@ const MangaList = () => {
           description: values.description,
           overview: values.overview,
           genres: values.genres,
-          posterUrl: '', 
-          backgroundUrl: '', 
+          poster: posterFile as File, 
+          background: backgroundFile as File,
         });
         message.success('Manga updated successfully');
       }

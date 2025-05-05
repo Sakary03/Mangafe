@@ -62,6 +62,8 @@ export const loginUser = async (credentials: LoginCredentials) => {
   };
   console.log('Response:', LoginResponse);
   localStorage.setItem('token', LoginResponse.token);
+  localStorage.setItem('user', JSON.stringify(LoginResponse.user)); 
+
   return LoginResponse;
 };
 
