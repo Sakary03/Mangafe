@@ -1,15 +1,18 @@
 // 📁 src/components/MangaDetail/MangaBanner.tsx
 import React from 'react';
 import { PlayCircleOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 
 interface MangaBannerProps {
+  id: number;
   title: string;
   poster: string;
   background: string;
   author: string;
+  numberOfChapters: number;
 }
 
-const MangaBanner: React.FC<MangaBannerProps> = ({ title, poster, background, author }) => {
+const MangaBanner: React.FC<MangaBannerProps> = ({ id, title, poster, background, author, numberOfChapters}) => {
   return (
     <div
       className="relative w-full h-[500px] bg-cover bg-center"
@@ -28,10 +31,22 @@ const MangaBanner: React.FC<MangaBannerProps> = ({ title, poster, background, au
           <div className="text-white">
             <h1 className="text-6xl font-bold mb-2">{title}</h1>
             <p className="text-lg text-gray-300 mb-4">{author}</p>
-            <button className="flex items-center bg-purple-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-purple-700 transition-colors">
+            {numberOfChapters >= 1 ? (
+            <Link to={`/manga/${id}/chapter/1`}>
+              <button className="flex items-center bg-purple-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-purple-700 transition-colors">
+                <PlayCircleOutlined className="mr-2" />
+                ĐỌC TỪ CHƯƠNG 1
+              </button>
+            </Link>
+          ) : (
+            <button
+              disabled
+              className="flex items-center bg-gray-400 text-white px-6 py-3 rounded-md font-semibold cursor-not-allowed"
+            >
               <PlayCircleOutlined className="mr-2" />
               ĐỌC TỪ CHƯƠNG 1
             </button>
+          )}
           </div>
         </div>
       </div>

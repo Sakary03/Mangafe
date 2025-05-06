@@ -1,46 +1,42 @@
 import { RouteObject } from 'react-router-dom';
 import HomePage from '../components/common/HomePage';
 import Login from '../pages/auth/Login';
-import NotFoundPage from '../pages/common/NotFoundPage';
-import UserLayout from '../layouts/UserLayout';
-import DashboardLayout from '../pages/dashboard/DashboardLayout';
-import MangaList from '../pages/dashboard/Manga/MangaList';
-import Dashboard from '../pages/dashboard/DashBoard';
-import MangaChapterList from '../pages/dashboard/MangaChapter/MangaChapterList';
 import Register from '../pages/auth/Register';
+import NotFoundPage from '../pages/common/NotFoundPage';
 import UserProfile from '../pages/common/UserProfile';
+import UserLayout from '../layouts/UserLayout';
+import Dashboard from '../pages/dashboard/DashBoard';
+import MangaList from '../pages/dashboard/Manga/MangaList';
+import MangaChapterList from '../pages/dashboard/MangaChapter/MangaChapterList';
 import ChapterList from '../pages/dashboard/Chapter/ChapterList';
 import UserList from '../pages/dashboard/User/UserList';
-import Home from '../components/common/HomePage/Home';
-import MangaDetailPage from '../components/common/ViewManga.tsx/MangaDetailPage';
+import MangaDetailPage from '../components/common/ViewManga/MangaDetailPage';
 import MangaChapterReader from '../components/common/ViewChapter/MangaChapterReader';
+import SearchManga from '../components/common/SearchManga/SearchManga';
 
 const routes: RouteObject[] = [
   {
     path: '/',
     element: <UserLayout />,
     children: [
+      { path: '', element: <HomePage /> },
+      { path: 'auth/login', element: <Login /> },
+      { path: 'auth/register', element: <Register /> },
+      { path: 'manga/:mangaId', element: <MangaDetailPage /> },
       {
-        path: '/auth/login',
-        element: <Login />,
+        path: 'manga/:mangaId/chapter/:chapterIndex',
+        element: <MangaChapterReader />,
       },
+      { path: 'search/manga', element: <SearchManga /> },
       {
-        path: '/auth/register',
-        element: <Register />,
-      },
-      {
-        path: '',
-        element: <HomePage />,
-      },
-      {
-        path: '/manga/:mangaId',
-        element: <MangaDetailPage />,
+        path: 'common/profile',
+        element: <UserProfile />,
       },
     ],
   },
   {
-    path: '/manga/:mangaId/chapter/:chapterIndex',
-    element: <MangaChapterReader />,
+    path: '/dashboard',
+    element: <Dashboard />,
   },
   {
     path: '/dashboard/manga',
@@ -57,14 +53,6 @@ const routes: RouteObject[] = [
   {
     path: '/dashboard/users',
     element: <UserList />,
-  },
-  {
-    path: '/dashboard/',
-    element: <Dashboard />,
-  },
-  {
-    path: '/common/profile',
-    element: <UserProfile />,
   },
   {
     path: '*',

@@ -1,14 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { Form, Input, Button, DatePicker, Upload, Select, message, Row, Col } from 'antd';
-import { UploadOutlined, UserOutlined, MailOutlined, LockOutlined, HomeOutlined, CalendarOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  UploadOutlined,
+  UserOutlined,
+  MailOutlined,
+  LockOutlined,
+  HomeOutlined,
+  CalendarOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import type { UploadFile, RcFile } from 'antd/es/upload/interface';
 import dayjs from 'dayjs';
 import { UserRole } from '../../types/UserRole';
 import { uploadToCloudinary } from '../../libs/CloudinaryService';
 import { registerUser, RegistrationFormData } from '../../libs/userService';
 import { ok } from 'assert';
-import { Router, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
   const [form] = Form.useForm();
@@ -17,10 +25,9 @@ const Register: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<RcFile | null>(null);
   const navigate = useNavigate();
 
-  // Add your layout image URL here
-  const LAYOUT_IMAGE_URL = 'YOUR_LAYOUT_IMAGE_URL'; // Replace with your actual image URL
+  const LAYOUT_IMAGE_URL =
+    'https://img.freepik.com/free-photo/view-starry-night-sky-with-nature-mountains-landscape_23-2151614765.jpg?t=st=1746502794~exp=1746506394~hmac=1d135d472a30e800655bea04874f9dfbced869a84de665650e86bc2c179730be&w=1380'; // Replace with your actual image URL
 
-  // Handle file selection before uploading
   const beforeUpload = (file: RcFile) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
@@ -32,34 +39,30 @@ const Register: React.FC = () => {
       message.error('Image must smaller than 2MB!');
       return false;
     }
-    
-    // Create preview URL
+
     const reader = new FileReader();
     reader.onload = () => {
       setPreviewImage(reader.result as string);
     };
     reader.readAsDataURL(file);
-    
-    // Store file for later upload
+
     setSelectedFile(file);
-    
-    // Return false to prevent automatic upload
+
     return false;
   };
 
-  // Handle form submission
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      let avatarUrl = 'https://w7.pngwing.com/pngs/205/731/png-transparent-default-avatar-thumbnail.png'; // Default avatar
+      let avatarUrl =
+        'https://w7.pngwing.com/pngs/205/731/png-transparent-default-avatar-thumbnail.png'; // Default avatar
 
-      // Upload image to Cloudinary if a file was selected
       if (selectedFile) {
         avatarUrl = (await uploadToCloudinary(selectedFile)).secure_url;
       }
 
       const formattedDate = dayjs(values.date).toISOString();
-      
+
       const registrationData: RegistrationFormData = {
         username: values.username,
         email: values.email,
@@ -68,12 +71,12 @@ const Register: React.FC = () => {
         date: formattedDate,
         address: values.address,
         role: values.role || 'USER',
-        avatar: avatarUrl
+        avatar: avatarUrl,
       };
 
       const response = await registerUser(registrationData);
 
-      if (response.status!=200) {
+      if (response.status != 200) {
         throw new Error('Registration failed');
       }
 
@@ -88,44 +91,75 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8 mt-20">
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <Row>
             {/* Layout Image Section */}
             <Col xs={0} lg={12}>
-              <div 
-                className="h-full bg-cover bg-center" 
-                style={{ 
+              <div
+                className="h-full bg-cover bg-center"
+                style={{
                   backgroundImage: `url(${LAYOUT_IMAGE_URL})`,
-                  minHeight: '700px'
+                  minHeight: '700px',
                 }}
               >
-                <div className="h-full bg-gradient-to-br from-blue-600/80 to-indigo-600/80 p-12 flex flex-col justify-center">
-                  <h1 className="text-4xl font-bold text-white mb-4">
-                    Welcome to Our Platform
+                <div className="h-full bg-gradient-to-br from-blue-600/30 to-indigo-600/30 p-12 flex flex-col justify-center backdrop-blur-sm">
+                  <h1 className="text-4xl font-bold text-white drop-shadow-md mb-4">
+                    Chào mừng bạn đến với Thư Viện Truyện
                   </h1>
-                  <p className="text-lg text-blue-100 mb-8">
-                    Join our community and start your journey with us today. Create your account and unlock all the amazing features we offer.
+                  <p className="text-lg text-white/90 mb-8 max-w-xl">
+                    Khám phá hàng ngàn bộ truyện hấp dẫn mọi thể loại. Đăng ký tài khoản để lưu trữ
+                    truyện yêu thích và tiếp tục đọc bất cứ lúc nào bạn muốn.
                   </p>
-                  <div className="space-y-4">
-                    <div className="flex items-center text-white">
-                      <svg className="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <div className="space-y-4 text-white/90">
+                    <div className="flex items-center">
+                      <svg
+                        className="h-6 w-6 mr-2 text-emerald-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
-                      <span>Secure and reliable platform</span>
+                      <span>Đọc truyện không quảng cáo, không gián đoạn</span>
                     </div>
-                    <div className="flex items-center text-white">
-                      <svg className="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <div className="flex items-center">
+                      <svg
+                        className="h-6 w-6 mr-2 text-emerald-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
-                      <span>24/7 customer support</span>
+                      <span>Giao diện thân thiện, dễ sử dụng</span>
                     </div>
-                    <div className="flex items-center text-white">
-                      <svg className="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <div className="flex items-center">
+                      <svg
+                        className="h-6 w-6 mr-2 text-emerald-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
-                      <span>Easy to use interface</span>
+                      <span>Hỗ trợ theo dõi và đánh dấu chương đang đọc</span>
                     </div>
                   </div>
                 </div>
@@ -138,7 +172,7 @@ const Register: React.FC = () => {
                 <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
                   Create Account
                 </h2>
-                
+
                 <Form
                   form={form}
                   name="registration"
@@ -156,10 +190,10 @@ const Register: React.FC = () => {
                     >
                       {previewImage ? (
                         <div className="relative">
-                          <img 
-                            src={previewImage} 
-                            alt="avatar" 
-                            className="w-full h-full object-cover rounded-full" 
+                          <img
+                            src={previewImage}
+                            alt="avatar"
+                            className="w-full h-full object-cover rounded-full"
                           />
                           <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-full">
                             <UploadOutlined className="text-white text-2xl" />
@@ -181,9 +215,9 @@ const Register: React.FC = () => {
                         label="Username"
                         rules={[{ required: true, message: 'Please input your username!' }]}
                       >
-                        <Input 
-                          prefix={<UserOutlined className="text-gray-400" />} 
-                          placeholder="Enter username" 
+                        <Input
+                          prefix={<UserOutlined className="text-gray-400" />}
+                          placeholder="Enter username"
                           size="large"
                           className="rounded-lg"
                         />
@@ -195,12 +229,12 @@ const Register: React.FC = () => {
                         label="Email"
                         rules={[
                           { required: true, message: 'Please input your email!' },
-                          { type: 'email', message: 'Please enter a valid email!' }
+                          { type: 'email', message: 'Please enter a valid email!' },
                         ]}
                       >
-                        <Input 
-                          prefix={<MailOutlined className="text-gray-400" />} 
-                          placeholder="Enter email" 
+                        <Input
+                          prefix={<MailOutlined className="text-gray-400" />}
+                          placeholder="Enter email"
                           size="large"
                           className="rounded-lg"
                         />
@@ -213,12 +247,12 @@ const Register: React.FC = () => {
                     label="Password"
                     rules={[
                       { required: true, message: 'Please input your password!' },
-                      { min: 6, message: 'Password must be at least 6 characters!' }
+                      { min: 6, message: 'Password must be at least 6 characters!' },
                     ]}
                   >
-                    <Input.Password 
-                      prefix={<LockOutlined className="text-gray-400" />} 
-                      placeholder="Enter password" 
+                    <Input.Password
+                      prefix={<LockOutlined className="text-gray-400" />}
+                      placeholder="Enter password"
                       size="large"
                       className="rounded-lg"
                     />
@@ -229,9 +263,9 @@ const Register: React.FC = () => {
                     label="Full Name"
                     rules={[{ required: true, message: 'Please input your full name!' }]}
                   >
-                    <Input 
-                      prefix={<UserOutlined className="text-gray-400" />} 
-                      placeholder="Enter full name" 
+                    <Input
+                      prefix={<UserOutlined className="text-gray-400" />}
+                      placeholder="Enter full name"
                       size="large"
                       className="rounded-lg"
                     />
@@ -253,11 +287,7 @@ const Register: React.FC = () => {
                       </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
-                      <Form.Item
-                        name="role"
-                        label="Role"
-                        initialValue="USER"
-                      >
+                      <Form.Item name="role" label="Role" initialValue="USER">
                         <Select size="large" className="rounded-lg">
                           <Select.Option value={UserRole.USER}>User</Select.Option>
                           <Select.Option value={UserRole.ADMIN}>Admin</Select.Option>
@@ -271,9 +301,9 @@ const Register: React.FC = () => {
                     label="Address"
                     rules={[{ required: true, message: 'Please input your address!' }]}
                   >
-                    <Input 
-                      prefix={<HomeOutlined className="text-gray-400" />} 
-                      placeholder="Enter address" 
+                    <Input
+                      prefix={<HomeOutlined className="text-gray-400" />}
+                      placeholder="Enter address"
                       size="large"
                       className="rounded-lg"
                     />

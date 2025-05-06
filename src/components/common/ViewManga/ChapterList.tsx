@@ -1,16 +1,17 @@
 // 📁 src/components/MangaDetail/ChapterList.tsx
 import React from 'react';
-import { Chapter } from '../../pages/MangaDetailPage';
+import { Chapter } from '../ViewManga/MangaDetailPage';
+import { useNavigate } from 'react-router-dom';
 
 interface ChapterListProps {
   chapters: Chapter[];
   mangaId: number;
 }
-
 const ChapterList: React.FC<ChapterListProps> = ({ chapters, mangaId }) => {
-  const handleChapterClick = (chapterId: number) => {
+  const navigate = useNavigate();
+  const handleChapterClick = (chapterIndex: number) => {
     // Navigate to chapter reader
-    window.location.href = `/manga/${mangaId}/chapter/${chapterId}`;
+    navigate(`/manga/${mangaId}/chapter/${chapterIndex}`);
   };
 
   return (
@@ -18,7 +19,7 @@ const ChapterList: React.FC<ChapterListProps> = ({ chapters, mangaId }) => {
       {chapters.map((chapter) => (
         <div 
           key={chapter.id}
-          onClick={() => handleChapterClick(chapter.id)}
+          onClick={() => handleChapterClick(chapter.chapterIndex)}
           className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer"
         >
           <div className="flex-1">

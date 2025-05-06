@@ -1,27 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Form,
-  Input,
-  Button,
-  Checkbox,
-  Typography,
-  Divider,
-  message,
-  Alert,
-} from 'antd';
-import {
-  MailOutlined,
-  LockOutlined,
-  EyeTwoTone,
-  EyeInvisibleOutlined,
-} from '@ant-design/icons';
-import {
-  loginUser,
-  getRememberedEmail,
-  saveRememberedEmail,
-} from '../../libs/api';
+import { Form, Input, Button, Checkbox, Typography, Divider, message, Alert } from 'antd';
+import { MailOutlined, LockOutlined, EyeTwoTone, EyeInvisibleOutlined } from '@ant-design/icons';
+import { loginUser, getRememberedEmail, saveRememberedEmail } from '../../libs/api';
 import { UserRole } from '../../types/UserRole';
 
 const { Title, Text } = Typography;
@@ -62,13 +44,11 @@ const Login: React.FC = () => {
         console.log('Navigating to dashboard');
       } else {
         navigate('/');
+        window.location.reload();
       }
     } catch (err: any) {
       console.error('Login failed:', err);
-      setError(
-        err.response?.data?.message ||
-          'Login failed. Please check your credentials.',
-      );
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -131,9 +111,7 @@ const Login: React.FC = () => {
             <Input.Password
               prefix={<LockOutlined className="text-gray-400" />}
               placeholder="Enter your password"
-              iconRender={visible =>
-                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-              }
+              iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
               className="rounded-lg"
             />
           </Form.Item>
@@ -175,7 +153,7 @@ const Login: React.FC = () => {
               Google
             </Button>
             <Button
-              icon={<span className="mr-2">f</span>}
+              icon={<span className="mr-2">F</span>}
               className="flex items-center justify-center border border-gray-300 rounded-lg"
               onClick={() => message.info('Facebook login not implemented yet')}
             >

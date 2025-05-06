@@ -1,4 +1,5 @@
 import api from './api';
+import qs from 'qs'; // Install with: npm install qs
 
 export interface MangaRequestDTO {
   title: string;
@@ -8,6 +9,20 @@ export interface MangaRequestDTO {
   genres: string[];
   poster: File | Blob;
   background: File | Blob;
+}
+
+export interface MangaItem {
+  id: number;
+  title: string;
+  overview: string;
+  description: string;
+  author: string;
+  posterUrl: string;
+  backgroundUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  chapters: any[]; // You can define a more specific type if needed
+  genres: string[];
 }
 
 export const createManga = async (payload: MangaRequestDTO) => {
@@ -49,23 +64,50 @@ export interface SearchMangaDTO {
   keyword?: string;
   title?: string;
   author?: string;
-  genres?: string;
+  genres?: string[];
 }
+
 
 export const searchManga = async (
   query: SearchMangaDTO,
   offset: number,
   limit: number,
 ) => {
+  const params: Record<string, any> = {
+    offset,
+    limit,
+  };
+
+  if (query.keyword?.trim()) {
+    params.keyword = query.keyword.trim();
+  }
+
+  if (query.title?.trim()) {
+    params.title = query.title.trim();
+  }
+
+  if (query.author?.trim()) {
+    params.author = query.author.trim();
+  }
+
+  if (Array.isArray(query.genres) && query.genres.length > 0) {
+    params.genres = query.genres;
+  }
+
+  console.log('Checking params:', params);
+
   const response = await api.get('/manga/search', {
-    params: { ...query, offset, limit },
+    params,
+    paramsSerializer: (params) =>
+      qs.stringify(params, { arrayFormat: 'repeat' }) // key=value&key=value
   });
+
   return response.data;
 };
 
+
 export const updateManga = async (id: number, payload: MangaRequestDTO) => {
   const formData = new FormData();
-
   formData.append('title', payload.title);
   formData.append('author', payload.author);
   formData.append('description', payload.description);
