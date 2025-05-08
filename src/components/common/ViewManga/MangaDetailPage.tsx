@@ -10,6 +10,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import * as MangaService from '../../../libs/mangaServices'
 import { parse } from 'path';
+import CommentSection from './CommentSection';
 const { Content } = Layout;
 
 export interface MangaDetail {
@@ -64,7 +65,7 @@ const MangaDetailPage: React.FC = () => {
   return (
     <Layout className="bg-gray-100 min-h-screen">
       <Content>
-        <MangaBanner 
+        <MangaBanner
           id={manga.id}
           title={manga.title}
           poster={manga.posterUrl}
@@ -76,11 +77,13 @@ const MangaDetailPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:w-2/3">
               <MangaTag genres={manga.genres} />
-              <MangaInfo 
+              <MangaInfo
                 overview={manga.overview}
                 description={manga.description}
               />
               <ChapterList chapters={manga.chapters} mangaId={manga.id} />
+              <br></br>
+              <CommentSection mangaId={manga.id} />
             </div>
             <div className="lg:w-1/3">
               <RelatedManga currentMangaId={manga.id} />

@@ -147,7 +147,7 @@ export const getAllUsersForStats = async (): Promise<UserResponse[]> => {
  * @returns User data
  */
 export const getUserById = async (userId: number): Promise<UserResponse> => {
-  const response = await api.get(`/user/${userId}`);
+  const response = await api.get(`/user/me/${userId}`);
   return response.data as UserResponse;
 };
 
