@@ -22,13 +22,20 @@ const MangaChapterReader: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [manga, chapter] = await Promise.all([
+        const [manga, chapter, chapterlist] = await Promise.all([
           mangaService.getMangaById(mangaIdNumber),
           chapterService.getChapter(mangaIdNumber, chapterIndexNumber),
+          chapterService.getAllChapter(mangaIdNumber),
         ]);
 
         if (manga && chapter) {
-          setMangaDetail(manga);
+          setMangaDetail(() => {
+            if (!manga) return null;
+            return {
+              ...manga,
+              chapters: chapterlist,
+            };
+          });
           setChapterDetail(chapter);
         } else {
           setError('Failed to load data');

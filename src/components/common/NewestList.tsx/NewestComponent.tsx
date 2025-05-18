@@ -9,7 +9,7 @@ export default function NewestComponent() {
     const navigate = useNavigate();
     useEffect(() => {
         const fetchManga = async () => {
-          const data = await mangaService.getAllManga(0, 10, 'createdAt', true);
+          const data = await mangaService.getAllManga(0, 8, 'createdAt', true);
           setListNewest(data);
         };
         fetchManga();

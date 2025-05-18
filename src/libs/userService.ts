@@ -28,7 +28,7 @@ export const getCurrentUser = (): any | null => {
     if (!userString) {
       return null;
     }
-
+    console.log('User data from localStorage:', userString);
     // Parse the user data
     return JSON.parse(userString);
   } catch (error) {
@@ -37,7 +37,6 @@ export const getCurrentUser = (): any | null => {
     return null;
   }
 };
-
 
 export interface RegistrationFormData {
   username: string;
@@ -50,22 +49,16 @@ export interface RegistrationFormData {
   avatar: string;
 }
 
-
-
 export const registerUser = async (formData: RegistrationFormData) => {
-  const response = await api.post(
-    `/auth/register`,
-    formData,
-  );
+  const response = await api.post(`/auth/register`, formData);
   return response;
-} 
+};
 
 export const getMyInfo = async () => {
-  const response =await JSON.parse(localStorage.getItem('user') || '{}');
+  const response = await JSON.parse(localStorage.getItem('user') || '{}');
   console.log('User info:', response);
   return response;
-} 
-
+};
 
 export interface UserResponse {
   id: number;
@@ -97,16 +90,16 @@ export interface PaginatedResponse {
 export const getAllUsersPaginated = async (
   offset: number = 0,
   limit: number = 10,
-  sortField: string = 'createdAt'
+  sortField: string = 'createdAt',
 ): Promise<PaginatedResponse> => {
   const response = await api.get('/user/get-all', {
     params: {
       offset,
       limit,
-      sortField
-    }
+      sortField,
+    },
   });
-  
+
   // If the backend doesn't return a paginated response structure,
   // we'll format it ourselves
   if (Array.isArray(response.data)) {
@@ -114,10 +107,10 @@ export const getAllUsersPaginated = async (
       data: response.data as UserResponse[],
       total: response.data.length, // This would be better if the backend provided a total count
       page: Math.floor(offset / limit) + 1,
-      limit
+      limit,
     };
   }
-  
+
   return response.data as PaginatedResponse;
 };
 
@@ -130,14 +123,14 @@ export const getAllUsersForStats = async (): Promise<UserResponse[]> => {
     params: {
       offset: 0,
       limit: 10000, // Set a very high limit to get all users
-      sortField: 'id'
-    }
+      sortField: 'id',
+    },
   });
-  
+
   if (Array.isArray(response.data)) {
     return response.data as UserResponse[];
   }
-  
+
   return response.data.data as UserResponse[];
 };
 
@@ -148,6 +141,7 @@ export const getAllUsersForStats = async (): Promise<UserResponse[]> => {
  */
 export const getUserById = async (userId: number): Promise<UserResponse> => {
   const response = await api.get(`/user/me/${userId}`);
+  console.log('User data:', response.data);
   return response.data as UserResponse;
 };
 
@@ -168,9 +162,16 @@ export const deleteUser = async (userId: number) => {
  * @returns Updated user data
  */
 export const updateUser = async (userId: number, userData: FormData) => {
-  const response = await api.put(`/user/${userId}`, userData, {
+  // Convert FormData to JSON object if the server expects JSON instead of multipart/form-data
+  const formDataObject: Record<string, any> = {};
+  userData.forEach((value, key) => {
+    formDataObject[key] = value;
+  });
+
+  // Try with JSON data instead of FormData
+  const response = await api.put(`/user/${userId}/update`, formDataObject, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
     },
   });
   return response.data;
@@ -188,4 +189,17 @@ export const addUser = async (userData: FormData) => {
     },
   });
   return response.data;
+};
+
+interface changeUserPasswordDTO {
+  oldPassword: string;
+  newPassword: string;
 }
+
+export const changeUserPassword = async (
+  userId: number,
+  requestDTO: changeUserPasswordDTO,
+) => {
+  const response = await api.put(`/auth/${userId}/change-password`, requestDTO);
+  return response.data;
+};

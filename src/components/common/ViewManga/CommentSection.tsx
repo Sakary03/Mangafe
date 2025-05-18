@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, Button, Input, Tooltip, Popconfirm, App, Spin, Card } from 'antd';
+import { Avatar, Button, Input, Tooltip, Popconfirm, App, Spin } from 'antd';
 import {
   LikeOutlined,
   LikeFilled,
@@ -9,7 +9,7 @@ import {
   SendOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined,
-  LoginOutlined
+  LoginOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -34,9 +34,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
   const [editingComment, setEditingComment] = useState<number | null>(null);
   const [commentText, setCommentText] = useState<string>('');
   const [currentUserId, setCurrentUserId] = useState<number>(0);
-  const [currentUser, setCurrentUser] = useState<userServices.UserResponse | null>(null);
+  const [currentUser, setCurrentUser] =
+    useState<userServices.UserResponse | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  
+
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const usersCache = useRef<Map<number, userServices.UserResponse>>(new Map());
   const inlineReplyFormRef = useRef<HTMLDivElement>(null);
@@ -47,13 +48,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
       try {
         const userLoggedInfo = await userServices.getMyInfo();
         console.log('User info:', userLoggedInfo);
-        
+
         // Check if user is logged in by validating if they have a valid userID
-        const isUserLoggedIn = Boolean(userLoggedInfo && userLoggedInfo.userID);
+        const isUserLoggedIn = Boolean(userLoggedInfo && userLoggedInfo.id);
         setIsLoggedIn(isUserLoggedIn);
-        
+
         if (isUserLoggedIn) {
-          setCurrentUserId(userLoggedInfo.userID || 0);
+          setCurrentUserId(userLoggedInfo.id || 0);
           setCurrentUser(userLoggedInfo);
         }
       } catch (error) {
@@ -72,7 +73,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
   // Focus on comment input when replying or editing
   useEffect(() => {
-    if ((replyTo !== null || editingComment !== null) && commentInputRef.current) {
+    if (
+      (replyTo !== null || editingComment !== null) &&
+      commentInputRef.current
+    ) {
       commentInputRef.current.focus();
     }
   }, [replyTo, editingComment]);
@@ -94,7 +98,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
     if (!isLoggedIn) {
       messageApi.error({
         content: 'Please log in to perform this action',
-        icon: <LoginOutlined style={{ color: '#ff4d4f' }} />
+        icon: <LoginOutlined style={{ color: '#ff4d4f' }} />,
       });
       return false;
     }
@@ -103,7 +107,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
   const handleLikeComment = async (commentId: number) => {
     if (!checkUserLoggedIn()) return;
-    
+
     try {
       await commentServices.toggleLikeComment(commentId, currentUserId);
       await loadComments();
@@ -113,9 +117,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
     }
   };
 
+  // Fix: Handle input change correctly without reversing text
+  const handleCommentInputChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const value = e.target.value;
+    setCommentText(value); // Direct assignment without reversing
+  };
+
   const handleSubmitComment = async () => {
     if (!checkUserLoggedIn()) return;
-    
+
     if (!commentText.trim()) {
       messageApi.warning('Please enter a comment');
       return;
@@ -151,7 +163,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
   const handleUpdateComment = async () => {
     if (!checkUserLoggedIn()) return;
-    
+
     if (!commentText.trim() || !editingComment) {
       messageApi.warning('Please enter a comment');
       return;
@@ -175,7 +187,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
   const handleDeleteComment = async (commentId: number) => {
     if (!checkUserLoggedIn()) return;
-    
+
     try {
       await commentServices.deleteComment(commentId);
       await loadComments();
@@ -188,7 +200,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
   const handleReply = async (comment: commentServices.CommentItem) => {
     if (!checkUserLoggedIn()) return;
-    
+
     setReplyTo(comment.id);
     setEditingComment(null);
     setCommentText('');
@@ -214,13 +226,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
   const handleEdit = (comment: commentServices.CommentItem) => {
     if (!checkUserLoggedIn()) return;
-    
+
     setEditingComment(comment.id);
     setReplyTo(null);
     setReplyToUser('');
     setReplyContent('');
     setCommentText(comment.content);
-    
+
     // Scroll to comment form
     scrollToCommentForm();
   };
@@ -270,10 +282,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
     const hasLiked = comment.likes.some(like => like.userId === currentUserId);
 
     const actions: React.ReactNode[] = [
-      <Tooltip key="like" title={isLoggedIn ? (hasLiked ? 'Unlike' : 'Like') : 'Log in to like'}>
+      <Tooltip
+        key="like"
+        title={isLoggedIn ? (hasLiked ? 'Unlike' : 'Like') : 'Log in to like'}
+      >
         <span
           onClick={() => handleLikeComment(comment.id)}
-          className={`flex items-center cursor-pointer transition-colors ${isLoggedIn ? 'hover:text-blue-500' : 'opacity-70'}`}
+          className={`flex items-center cursor-pointer transition-colors ${
+            isLoggedIn ? 'hover:text-blue-500' : 'opacity-70'
+          }`}
         >
           {hasLiked ? (
             <LikeFilled className="text-blue-500" />
@@ -286,7 +303,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
       <Tooltip key="reply" title={isLoggedIn ? 'Reply' : 'Log in to reply'}>
         <span
           onClick={() => handleReply(comment)}
-          className={`flex items-center cursor-pointer transition-colors ${isLoggedIn ? 'hover:text-blue-500' : 'opacity-70'}`}
+          className={`flex items-center cursor-pointer transition-colors ${
+            isLoggedIn ? 'hover:text-blue-500' : 'opacity-70'
+          }`}
         >
           <MessageOutlined />
           <span className="ml-1">Reply</span>
@@ -327,9 +346,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
   const renderInlineReplyForm = (comment: commentServices.CommentItem) => {
     if (replyTo !== comment.id) return null;
-    
+
     return (
-      <div 
+      <div
         ref={inlineReplyFormRef}
         className="mt-4 ml-8 mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100 animate-fadeIn"
       >
@@ -341,18 +360,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
               <span className="text-blue-600">{replyToUser}</span>
             </div>
             <div className="text-gray-600 text-sm pl-2 border-l-2 border-gray-200 italic">
-              {replyContent.length > 100 ? `${replyContent.substring(0, 100)}...` : replyContent}
+              {replyContent.length > 100
+                ? `${replyContent.substring(0, 100)}...`
+                : replyContent}
             </div>
           </div>
-          <Button 
-            type="text" 
-            icon={<CloseCircleOutlined />} 
+          <Button
+            type="text"
+            icon={<CloseCircleOutlined />}
             onClick={cancelAction}
             size="small"
             className="text-gray-500 hover:text-red-500"
           />
         </div>
-        
+
         <div className="flex">
           {/* Current User Avatar */}
           <div className="mr-3 flex-shrink-0 mt-1">
@@ -370,16 +391,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
               rows={3}
               placeholder={`Write your reply to ${replyToUser}...`}
               value={commentText}
-              onChange={e => setCommentText(e.target.value)}
+              onChange={handleCommentInputChange} // Fixed: Use the non-reversing handler
               className="w-full rounded-lg mb-2"
               status={commentText.trim() === '' && submitting ? 'error' : ''}
               ref={commentInputRef}
               autoFocus
             />
             <div className="flex justify-end gap-2">
-              <Button onClick={cancelAction}>
-                Cancel
-              </Button>
+              <Button onClick={cancelAction}>Cancel</Button>
               <Button
                 type="primary"
                 onClick={handleSubmitComment}
@@ -400,9 +419,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
   useEffect(() => {
     if (replyTo && inlineReplyFormRef.current) {
       setTimeout(() => {
-        inlineReplyFormRef.current?.scrollIntoView({ 
+        inlineReplyFormRef.current?.scrollIntoView({
           behavior: 'smooth',
-          block: 'center'
+          block: 'center',
         });
       }, 100);
     }
@@ -482,7 +501,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
         {/* Inline reply form */}
         {renderInlineReplyForm(comment)}
-        
+
         {/* Render replies */}
         {replies.length > 0 && (
           <div className={`mt-3 ${isDeepNested ? 'ml-4' : 'ml-8'}`}>
@@ -526,9 +545,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
           {/* Edit info */}
           {editingComment && (
             <div className="bg-yellow-50 p-3 mb-4 rounded-lg flex justify-between items-center">
-              <span className="font-medium">
-                Editing your comment
-              </span>
+              <span className="font-medium">Editing your comment</span>
               <Button
                 type="text"
                 onClick={cancelAction}
@@ -546,9 +563,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
                 <LoginOutlined className="mr-2" />
                 Please log in to post comments
               </p>
-              <Button type="primary">
-                Log In
-              </Button>
+              <Button type="primary">Log In</Button>
             </div>
           ) : (
             <div className="flex">
@@ -569,16 +584,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
                     rows={4}
                     placeholder="Write your comment here..."
                     value={commentText}
-                    onChange={e => setCommentText(e.target.value)}
+                    onChange={handleCommentInputChange} // Fixed: Use the non-reversing handler
                     className="w-full rounded-lg"
-                    status={commentText.trim() === '' && submitting ? 'error' : ''}
+                    status={
+                      commentText.trim() === '' && submitting ? 'error' : ''
+                    }
                     ref={commentInputRef}
                   />
                 </div>
                 <div className="flex justify-end">
                   <Button
                     type="primary"
-                    onClick={editingComment ? handleUpdateComment : handleSubmitComment}
+                    onClick={
+                      editingComment ? handleUpdateComment : handleSubmitComment
+                    }
                     loading={submitting}
                     icon={<SendOutlined />}
                     className="flex items-center"

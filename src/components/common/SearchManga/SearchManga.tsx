@@ -7,16 +7,22 @@ import {
   DownOutlined
 } from '@ant-design/icons';
 import * as mangaService from '../../../libs/mangaServices';
+import * as chapterService from '../../../libs/chapterServices';
 import { MangaGenres } from '../../../types/MangaGenres';
 const SearchManga: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<mangaService.MangaItem[]>([]);
+  const [searchResults, setSearchResults] = useState<mangaService.MangaItem[]>(
+    [],
+  );
   const [activeTab, setActiveTab] = useState('all');
   const [loading, setLoading] = useState(false);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [genreDropdownVisible, setGenreDropdownVisible] = useState(false);
+  const [chapterCounts, setChapterCounts] = useState<Record<number, number>>(
+    {},
+  );
 
   const allGenres = Object.values(MangaGenres);
 
@@ -29,8 +35,8 @@ const SearchManga: React.FC = () => {
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       performSearch(searchQuery);
-    }, 500); 
-    
+    }, 500);
+
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, activeTab, selectedGenres]);
 
@@ -43,32 +49,64 @@ const SearchManga: React.FC = () => {
     setLoading(true);
     try {
       const searchDto: mangaService.SearchMangaDTO = {};
-      
-        switch (activeTab) {
-          case 'titles':
-            searchDto.title = query;
-            break;
-          case 'authors':
-            searchDto.author = query;
-            break;
-          default:
-            searchDto.keyword = query;
-            break;
-        }
-      
+
+      switch (activeTab) {
+        case 'titles':
+          searchDto.title = query;
+          break;
+        case 'authors':
+          searchDto.author = query;
+          break;
+        case 'users':
+          searchDto.uploadedBy = query;
+          break;
+        default:
+          searchDto.title = query;
+          searchDto.author = query;
+          break;
+      }
+
       searchDto.genres = selectedGenres.length > 0 ? selectedGenres : [];
-      const results = await mangaService.searchManga(
-        searchDto, 
-        0, 
-        20, 
-      );
+      searchDto.status = ['APPROVED'];
+      const results = await mangaService.searchManga(searchDto, 0, 20);
       setSearchResults(results);
+
+      // Fetch chapter counts for the manga in the results
+      fetchChapterCounts(results);
+
+      // Fetch chapter counts for the manga in the results
+      fetchChapterCounts(results);
     } catch (error) {
       console.error('Error searching manga:', error);
       setSearchResults([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to fetch chapter counts for all manga in the search results
+  const fetchChapterCounts = async (mangaResults: mangaService.MangaItem[]) => {
+    const newChapterCounts: Record<number, number> = {};
+
+    // Create an array of promises for all manga chapter fetch requests
+    const promises = mangaResults.map(async manga => {
+      try {
+        const chapters = await chapterService.getAllChapter(manga.id);
+        newChapterCounts[manga.id] = chapters.length;
+      } catch (error) {
+        console.error(
+          `Error fetching chapters for manga ID ${manga.id}:`,
+          error,
+        );
+        newChapterCounts[manga.id] = 0;
+      }
+    });
+
+    // Wait for all requests to complete
+    await Promise.all(promises);
+
+    // Update state with the chapter counts
+    setChapterCounts(newChapterCounts);
   };
 
   const handleTabChange = (key: string) => {
@@ -84,11 +122,11 @@ const SearchManga: React.FC = () => {
       }
     });
   };
-  
+
   const clearGenres = () => {
     setSelectedGenres([]);
   };
-  
+
   const clearSearch = () => {
     setSearchQuery('');
     setSearchResults([]);
@@ -98,7 +136,7 @@ const SearchManga: React.FC = () => {
   const renderGenres = (genres: string[]) => {
     return genres.map((genre, index) => {
       let bgColor = 'bg-gray-200 text-gray-800';
-      
+
       if (['ACTION', 'ADVENTURE', 'SUPERNATURAL'].includes(genre)) {
         bgColor = 'bg-blue-100 text-blue-800';
       } else if (['ROMANCE', 'COMEDY', 'SLICE_OF_LIFE'].includes(genre)) {
@@ -114,12 +152,12 @@ const SearchManga: React.FC = () => {
       } else if (['GAME', 'SPORTS', 'MUSIC'].includes(genre)) {
         bgColor = 'bg-indigo-100 text-indigo-800';
       }
-      
+
       const displayGenre = genre.replace(/_/g, ' ');
-      
+
       return (
-        <span 
-          key={index} 
+        <span
+          key={index}
           className={`text-xs font-medium mr-2 px-2 py-0.5 rounded ${bgColor} uppercase`}
         >
           {displayGenre}
@@ -157,7 +195,7 @@ const SearchManga: React.FC = () => {
           prefix={<SearchOutlined className="site-form-item-icon" />}
           placeholder="Search"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           size="large"
           className="pr-10"
           suffix={
@@ -183,7 +221,7 @@ const SearchManga: React.FC = () => {
             { label: 'Authors', key: 'authors' },
           ]}
         />
-        
+
         <Dropdown
           open={genreDropdownVisible}
           onOpenChange={setGenreDropdownVisible}
@@ -192,7 +230,7 @@ const SearchManga: React.FC = () => {
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-bold">Filter by Genre</h3>
                 {selectedGenres.length > 0 && (
-                  <button 
+                  <button
                     onClick={() => {
                       clearGenres();
                       setGenreDropdownVisible(false);
@@ -203,7 +241,7 @@ const SearchManga: React.FC = () => {
                   </button>
                 )}
               </div>
-              
+
               <div className="max-h-60 overflow-y-auto mt-2">
                 {allGenres.map(genre => (
                   <div key={genre} className="py-1">
@@ -229,7 +267,7 @@ const SearchManga: React.FC = () => {
           </Button>
         </Dropdown>
       </div>
-      
+
       {/* Display selected genres */}
       {selectedGenres.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
@@ -246,13 +284,16 @@ const SearchManga: React.FC = () => {
         </div>
       )}
 
-      {(
+      {
         <div className="mb-4">
           <h2 className="text-xl font-bold mb-4">Manga</h2>
           <div className="space-y-4">
             {searchResults.length > 0 ? (
-              searchResults.map((manga) => (
-                <div key={manga.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              searchResults.map(manga => (
+                <div
+                  key={manga.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
                   <Link to={`/manga/${manga.id}`} className="flex p-4">
                     <div className="w-24 h-32 flex-shrink-0 mr-4">
                       <img
@@ -264,7 +305,9 @@ const SearchManga: React.FC = () => {
 
                     <div className="flex-grow overflow-hidden">
                       <div className="flex items-start justify-between mb-1">
-                        <h3 className="text-lg font-bold truncate">{manga.title}</h3>
+                        <h3 className="text-lg font-bold truncate">
+                          {manga.title}
+                        </h3>
                         <div className="flex items-center ml-2 flex-shrink-0">
                           {/* Displaying creation date instead of rating */}
                           <span className="text-xs text-gray-500">
@@ -272,41 +315,57 @@ const SearchManga: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      
-                      <div className="mb-2">
-                        {renderGenres(manga.genres)}
-                      </div>
-                      
+
+                      <div className="mb-2">{renderGenres(manga.genres)}</div>
+
                       {manga.overview && (
                         <p className="text-sm text-gray-700 line-clamp-2">
                           {manga.overview}
                         </p>
                       )}
-                      
+
                       {manga.author && (
                         <p className="text-sm text-gray-500 mt-1">
                           Author: {manga.author}
                         </p>
                       )}
-                      
-                      {/* Display number of chapters */}
-                      <p className="text-xs text-gray-500 mt-1">
-                        Chapters: {manga.chapters.length}
-                      </p>
+
+                      {/* Display number of chapters and reads */}
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-xs text-gray-500">
+                          Chapters: {chapterCounts[manga.id] || 0}
+                        </p>
+                        <p className="text-xs text-gray-500 flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mr-1"
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          {manga.readTimes || 0} reads
+                        </p>
+                      </div>
                     </div>
                   </Link>
                 </div>
               ))
+            ) : loading ? (
+              <div className="text-center py-4">Loading...</div>
             ) : (
-              loading ? (
-                <div className="text-center py-4">Loading...</div>
-              ) : (
-                <Empty description="No results found" />
-              )
+              <Empty description="No results found" />
             )}
           </div>
         </div>
-      )}
+      }
     </div>
   );
 };

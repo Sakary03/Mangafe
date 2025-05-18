@@ -9,6 +9,7 @@ import RelatedManga from './RelatedManga';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import * as MangaService from '../../../libs/mangaServices'
+import * as ChapterService from '../../../libs/chapterServices';
 import { parse } from 'path';
 import CommentSection from './CommentSection';
 const { Content } = Layout;
@@ -42,22 +43,36 @@ const MangaDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const idString = useParams<{ mangaId: string }>();
   const mangaId = parseInt(idString.mangaId || '');
-  console.log("Checking mangaId", mangaId);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  console.log('Checking mangaId', mangaId);
   useEffect(() => {
     const fetchMangaDetail = async () => {
       try {
         const response = await MangaService.getMangaById(mangaId);
-        console.log("Checking get manga detail", response);
-        setManga(response);
+        const chapters = await ChapterService.getAllChapter(mangaId);
+        setManga(() => {
+          if (!response) return null;
+          return {
+            ...response,
+            chapters: chapters,
+          };
+        });
+        console.log('Checking manga detail', manga);
       } catch (error) {
         console.error('Error fetching manga detail:', error);
       } finally {
         setLoading(false);
       }
     };
-
+    checkAuthStatus();
     fetchMangaDetail();
   }, []);
+
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  };
 
   if (loading) return <div>Loading...</div>;
   if (!manga) return <div>Manga not found</div>;
@@ -71,7 +86,8 @@ const MangaDetailPage: React.FC = () => {
           poster={manga.posterUrl}
           background={manga.backgroundUrl}
           author={manga.author}
-          numberOfChapters={manga.chapters.length}
+          numberOfChapters={manga.chapters?.length}
+          isLoggedIn={isLoggedIn}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col lg:flex-row gap-8">

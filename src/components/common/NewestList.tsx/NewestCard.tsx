@@ -2,7 +2,7 @@ import React from 'react';
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
 import { Avatar, Card } from 'antd';
 import { useNavigate } from 'react-router-dom';
-
+import * as mangaService from '../../../libs/mangaServices';
 const { Meta } = Card;
 
 export interface NewestCardProps {
@@ -17,10 +17,10 @@ export interface NewestCardProps {
 
 const NewestCard: React.FC<NewestCardProps> = (mangaDetail) => {
     const navigate = useNavigate();
-    const handleCardClick = () => {
-        // Mock navigation - replace with your actual navigation logic
-        console.log(`Navigating to manga ${mangaDetail.id}`);
-        navigate(`/manga/${mangaDetail.id}`);
+    const handleCardClick = async () => {
+      await mangaService.handleViewManga(mangaDetail.id);
+      console.log(`Navigating to manga ${mangaDetail.id}`);
+      navigate(`/manga/${mangaDetail.id}`);
     };
 
     return (

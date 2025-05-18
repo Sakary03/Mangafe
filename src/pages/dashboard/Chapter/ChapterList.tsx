@@ -60,8 +60,8 @@ const ChapterList: React.FC = () => {
       setLoading(true);
       const offset = (page - 1) * pageSize;
       const response = await getAllChaptersPaginated(offset, pageSize, sort);
-      
       setChapters(response.data);
+      console.log('Checking chapters: ', response.data);
       setPagination({
         ...pagination,
         current: page,
@@ -133,7 +133,8 @@ const ChapterList: React.FC = () => {
       title: 'Chapter #',
       dataIndex: 'chapterIndex',
       key: 'chapterIndex',
-      sorter: (a: ChapterData, b: ChapterData) => a.chapterIndex - b.chapterIndex,
+      sorter: (a: ChapterData, b: ChapterData) =>
+        a.chapterIndex - b.chapterIndex,
     },
     {
       title: 'Title',
@@ -147,14 +148,13 @@ const ChapterList: React.FC = () => {
       title: 'Pages',
       dataIndex: 'pages',
       key: 'pages',
-      render: (pages: string[]) => (
-        <Tag color="blue">{pages.length} pages</Tag>
-      ),
+      render: (pages: string[]) => <Tag color="blue">{pages.length} pages</Tag>,
     },
     {
-      title: 'Read Count',
-      dataIndex: 'readTimes',
-      key: 'readTimes',
+      title: 'Manga',
+      dataIndex: 'mangaName',
+      key: 'mangaName',
+      render: (manga: string) => <Tag color="blue">{manga} pages</Tag>,
     },
     {
       title: 'Created At',
@@ -174,14 +174,14 @@ const ChapterList: React.FC = () => {
       render: (_: any, record: ChapterData) => (
         <Space size="small">
           <Tooltip title="View Chapter">
-            <Button 
-              icon={<EyeOutlined />} 
+            <Button
+              icon={<EyeOutlined />}
               onClick={() => handleViewChapter(record.id)}
             />
           </Tooltip>
           <Tooltip title="Edit Chapter">
-            <Button 
-              icon={<EditOutlined />} 
+            <Button
+              icon={<EditOutlined />}
               onClick={() => handleEditChapter(record.id)}
             />
           </Tooltip>

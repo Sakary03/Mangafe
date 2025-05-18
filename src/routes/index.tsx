@@ -13,6 +13,9 @@ import UserList from '../pages/dashboard/User/UserList';
 import MangaDetailPage from '../components/common/ViewManga/MangaDetailPage';
 import MangaChapterReader from '../components/common/ViewChapter/MangaChapterReader';
 import SearchManga from '../components/common/SearchManga/SearchManga';
+import NotificationsPage from '../components/common/Notification/NotificationPage';
+import UploadManga from '../components/user/UploadManga/UploadManga';
+import UserProfilePage from '../pages/dashboard/User/Profile/UserProfilePage';
 
 const routes: RouteObject[] = [
   {
@@ -30,13 +33,21 @@ const routes: RouteObject[] = [
       { path: 'search/manga', element: <SearchManga /> },
       {
         path: 'common/profile',
-        element: <UserProfile />,
+        element: <UserProfilePage />,
+      },
+      {
+        path: 'upload',
+        element: <UploadManga />,
       },
     ],
   },
   {
     path: '/dashboard',
     element: <Dashboard />,
+  },
+  {
+    path: '/notification',
+    element: <NotificationsPage />,
   },
   {
     path: '/dashboard/manga',

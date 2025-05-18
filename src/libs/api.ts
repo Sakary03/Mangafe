@@ -26,17 +26,16 @@ api.interceptors.request.use(
   error => Promise.reject(error),
 );
 
-// Optional: Handle token expiration globally
-api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  },
-);
+// api.interceptors.response.use(
+//   response => response,
+//   error => {
+//     if (error.response?.status === 401) {
+//       localStorage.removeItem('token');
+//       window.location.href = '/login';
+//     }
+//     return Promise.reject(error);
+//   },
+// );
 
 // ========== AUTH APIs ==========
 
@@ -60,9 +59,13 @@ export const loginUser = async (credentials: LoginCredentials) => {
     token: response.data.accessToken,
     user: response.data.userInfo,
   };
-  console.log('Response:', LoginResponse);
+  console.log('Response:', response.data.userInfo);
   localStorage.setItem('token', LoginResponse.token);
   localStorage.setItem('user', JSON.stringify(LoginResponse.user)); 
+  console.log(
+    'User info saved to localStorage: ',
+    await localStorage.getItem('user'),
+  );
 
   return LoginResponse;
 };

@@ -10,6 +10,8 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { SearchMangaDTO } from '../../libs/mangaServices';
 import * as mangaService from '../../libs/mangaServices';
+import { NotificationProvider } from '../../context/NotificationContext';
+import NotificationDropdown from './Notification/NotificationDropdown';
 const { Header } = Layout;
 
 const UserHeader = () => {
@@ -26,7 +28,7 @@ const UserHeader = () => {
     const token = localStorage.getItem('token');
     const userInfo = JSON.parse(localStorage.getItem('user'));
     setIsLoggedIn(!!token);
-    setUsername(userInfo.username || 'Khoa');
+    setUsername(userInfo?.username || 'Khoa');
   };
 
   useEffect(() => {
@@ -202,7 +204,8 @@ const UserHeader = () => {
 
   const dropdownItems = isLoggedIn ? userMenuItems : guestMenuItems;
 
-  return (
+  // Render the header content
+  const renderHeaderContent = () => (
     <Header className="fixed top-0 left-0 w-full z-50 bg-gray-800 px-6 flex items-center justify-between">
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2 text-white">
@@ -320,15 +323,8 @@ const UserHeader = () => {
           />
         )}
 
-        {isLoggedIn && (
-          <Button
-            icon={<BellOutlined />}
-            type="text"
-            className="text-white flex items-center justify-center"
-            shape="circle"
-            size="large"
-          />
-        )}
+        {/* Only render NotificationDropdown if logged in */}
+        {isLoggedIn && <NotificationDropdown />}
 
         <Dropdown
           menu={{ items: dropdownItems }}
@@ -351,6 +347,13 @@ const UserHeader = () => {
         </Dropdown>
       </div>
     </Header>
+  );
+
+  // Return the component with or without NotificationProvider based on login status
+  return isLoggedIn ? (
+    <NotificationProvider>{renderHeaderContent()}</NotificationProvider>
+  ) : (
+    renderHeaderContent()
   );
 };
 

@@ -9,6 +9,7 @@ export interface MangaRequestDTO {
   genres: string[];
   poster: File | Blob;
   background: File | Blob;
+  userId: number;
 }
 
 export interface MangaItem {
@@ -32,7 +33,7 @@ export const createManga = async (payload: MangaRequestDTO) => {
   formData.append('author', payload.author);
   formData.append('description', payload.description);
   formData.append('overview', payload.overview);
-
+  formData.append('userId', payload.userId.toString());
   payload.genres.forEach(genre => {
     formData.append('genres', genre);
   });
@@ -53,7 +54,12 @@ export const getMangaById = async (id: number) => {
   return response.data;
 };
 
-export const getAllManga = async (offset: number, limit: number, sortby: string, isAsc: boolean) => {
+export const getAllManga = async (
+  offset: number,
+  limit: number,
+  sortby: string,
+  isAsc: boolean,
+) => {
   const response = await api.get('/manga', {
     params: { offset, limit, sortby, isAsc },
   });
@@ -61,10 +67,11 @@ export const getAllManga = async (offset: number, limit: number, sortby: string,
 };
 
 export interface SearchMangaDTO {
-  keyword?: string;
   title?: string;
   author?: string;
   genres?: string[];
+  status?: string[];
+  uploadedBy?: number;
 }
 
 
@@ -78,10 +85,6 @@ export const searchManga = async (
     limit,
   };
 
-  if (query.keyword?.trim()) {
-    params.keyword = query.keyword.trim();
-  }
-
   if (query.title?.trim()) {
     params.title = query.title.trim();
   }
@@ -94,17 +97,23 @@ export const searchManga = async (
     params.genres = query.genres;
   }
 
+  if (Array.isArray(query.status) && query.status.length > 0) {
+    params.status = query.status;
+  }
+
+  if (query.uploadedBy) {
+    params.uploadedBy = query.uploadedBy;
+  }
+
   console.log('Checking params:', params);
 
   const response = await api.get('/manga/search', {
     params,
-    paramsSerializer: (params) =>
-      qs.stringify(params, { arrayFormat: 'repeat' }) // key=value&key=value
+    paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' }),
   });
 
   return response.data;
 };
-
 
 export const updateManga = async (id: number, payload: MangaRequestDTO) => {
   const formData = new FormData();
@@ -130,5 +139,10 @@ export const updateManga = async (id: number, payload: MangaRequestDTO) => {
 
 export const deleteManga = async (id: number) => {
   const response = await api.delete(`/manga/delete/${id}`);
+  return response.data;
+};
+
+export const handleViewManga = async (id: number) => {
+  const response = await api.put(`/manga/${id}/read`);
   return response.data;
 };
