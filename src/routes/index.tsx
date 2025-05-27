@@ -16,6 +16,9 @@ import SearchManga from '../components/common/SearchManga/SearchManga';
 import NotificationsPage from '../components/common/Notification/NotificationPage';
 import UploadManga from '../components/user/UploadManga/UploadManga';
 import UserProfilePage from '../pages/dashboard/User/Profile/UserProfilePage';
+import FollowingPage from '../pages/user/FollowingPage';
+import UserChapterUploaded from '../pages/dashboard/UserChapterUploaded';
+import UserMangaUploaded from '../pages/dashboard/UserMangaUploaded';
 
 const routes: RouteObject[] = [
   {
@@ -38,6 +41,10 @@ const routes: RouteObject[] = [
       {
         path: 'upload',
         element: <UploadManga />,
+      },
+      {
+        path: 'user/following',
+        element: <FollowingPage />,
       },
     ],
   },
@@ -64,6 +71,14 @@ const routes: RouteObject[] = [
   {
     path: '/dashboard/users',
     element: <UserList />,
+  },
+  {
+    path: '/dashboard/user-chapter-uploaded',
+    element: <UserChapterUploaded />,
+  },
+  {
+    path: '/dashboard/user-manga-uploaded',
+    element: <UserMangaUploaded />,
   },
   {
     path: '*',

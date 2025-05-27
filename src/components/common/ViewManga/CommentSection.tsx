@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Avatar, Button, Input, Tooltip, Popconfirm, App, Spin } from 'antd';
+import { Avatar, Button, Tooltip, Popconfirm, App, Spin } from 'antd';
 import {
   LikeOutlined,
   LikeFilled,
@@ -42,19 +42,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
   const usersCache = useRef<Map<number, userServices.UserResponse>>(new Map());
   const inlineReplyFormRef = useRef<HTMLDivElement>(null);
 
-  // Fetch current user info
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const userLoggedInfo = await userServices.getMyInfo();
-        console.log('User info:', userLoggedInfo);
 
-        // Check if user is logged in by validating if they have a valid userID
-        const isUserLoggedIn = Boolean(userLoggedInfo && userLoggedInfo.id);
+        const isUserLoggedIn = Boolean(userLoggedInfo && userLoggedInfo.userID);
         setIsLoggedIn(isUserLoggedIn);
 
         if (isUserLoggedIn) {
-          setCurrentUserId(userLoggedInfo.id || 0);
+          setCurrentUserId(userLoggedInfo.userID || 0);
           setCurrentUser(userLoggedInfo);
         }
       } catch (error) {
@@ -117,13 +114,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
     }
   };
 
-  // Fix: Handle input change correctly without reversing text
-  const handleCommentInputChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    const value = e.target.value;
-    setCommentText(value); // Direct assignment without reversing
-  };
+  // Direct input handling through inline onChange handlers
 
   const handleSubmitComment = async () => {
     if (!checkUserLoggedIn()) return;
@@ -375,7 +366,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
         </div>
 
         <div className="flex">
-          {/* Current User Avatar */}
           <div className="mr-3 flex-shrink-0 mt-1">
             <Avatar
               src={currentUser?.avatarUrl}
@@ -387,15 +377,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
           </div>
 
           <div className="flex-grow">
-            <Input.TextArea
+            <textarea
               rows={3}
               placeholder={`Write your reply to ${replyToUser}...`}
               value={commentText}
-              onChange={handleCommentInputChange} // Fixed: Use the non-reversing handler
-              className="w-full rounded-lg mb-2"
-              status={commentText.trim() === '' && submitting ? 'error' : ''}
+              onInput={e =>
+                setCommentText((e.target as HTMLTextAreaElement).value)
+              }
               ref={commentInputRef}
               autoFocus
+              className="w-full rounded-lg mb-2 p-2 border border-gray-300 focus:border-blue-500 focus:outline-none"
             />
             <div className="flex justify-end gap-2">
               <Button onClick={cancelAction}>Cancel</Button>
@@ -438,13 +429,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
     useEffect(() => {
       const getUserInfo = async () => {
         setIsLoading(true);
+        console.log('Fetching user info for comment:', comment);
         const fetchedUser = await fetchUser(comment.userId);
         setUser(fetchedUser);
         setIsLoading(false);
       };
 
       getUserInfo();
-    }, [comment.userId]);
+    }, [comment, comment.userId]);
 
     if (isLoading) {
       return (
@@ -570,7 +562,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
               {/* Current User Avatar */}
               <div className="mr-3 flex-shrink-0 mt-1">
                 <Avatar
-                  src={currentUser?.avatarUrl}
+                  src={currentUser?.avatar}
                   alt={currentUser?.userName}
                   className="border border-gray-200"
                 >
@@ -580,16 +572,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
 
               <div className="flex-grow">
                 <div className="mb-3">
-                  <Input.TextArea
+                  <textarea
                     rows={4}
                     placeholder="Write your comment here..."
                     value={commentText}
-                    onChange={handleCommentInputChange} // Fixed: Use the non-reversing handler
-                    className="w-full rounded-lg"
-                    status={
-                      commentText.trim() === '' && submitting ? 'error' : ''
+                    onChange={e => setCommentText(e.target.value)}
+                    className="w-full rounded-lg p-2 border border-gray-300 focus:border-blue-500 focus:outline-none"
+                    ref={
+                      commentInputRef as React.RefObject<HTMLTextAreaElement>
                     }
-                    ref={commentInputRef}
                   />
                 </div>
                 <div className="flex justify-end">

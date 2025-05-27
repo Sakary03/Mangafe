@@ -573,7 +573,9 @@ const UserProfilePage: React.FC = () => {
                     Manga Following
                   </Title>
 
-                  <Button type="link">View All</Button>
+                  <Link to="/user/following">
+                    <Button type="link">View All</Button>
+                  </Link>
                 </div>
               }
               loading={followLoading}

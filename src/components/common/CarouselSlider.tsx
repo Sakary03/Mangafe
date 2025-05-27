@@ -20,15 +20,15 @@ interface CarouselSliderProps {
   speed?: number;
 }
 
-const CarouselWrapper = styled.div`
+const CarouselWrapper = styled.div<{ activeSlideColor?: string }>`
   position: relative;
   width: 100%;
   overflow: hidden;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.5),
-    rgba(0, 0, 0, 0.7)
-  );
+  background: ${props =>
+    props.activeSlideColor
+      ? `linear-gradient(to bottom, ${props.activeSlideColor}30, ${props.activeSlideColor}70)`
+      : 'linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4))'};
+  transition: background 2.5s ease-in-out;
   padding: 0;
 `;
 
@@ -95,28 +95,6 @@ const CustomTag = styled(Tag)`
   }
 `;
 
-const CustomArrow = styled.div`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
-  width: 50px;
-  height: 50px;
-  background-color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-    transform: translateY(-50%) scale(1.1);
-  }
-`;
-
 // Add these new styled components
 const CarouselContainer = styled.div`
   position: relative;
@@ -140,6 +118,33 @@ const CarouselContainer = styled.div`
     overflow: visible;
     padding: 30px 0;
   }
+`;
+
+const ClickArea = styled.div`
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 15%;
+  z-index: 2;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const LeftClickArea = styled(ClickArea)`
+  left: 0;
+`;
+
+const RightClickArea = styled(ClickArea)`
+  right: 0;
 `;
 
 const InfoButton = styled.button`
@@ -167,14 +172,6 @@ const InfoButton = styled.button`
   }
 `;
 
-const LeftArrow = styled(CustomArrow)`
-  left: 5%;
-`;
-
-const RightArrow = styled(CustomArrow)`
-  right: 5%;
-`;
-
 const fetchSlideData = async (): Promise<SlideItem[]> => {
   const response = await mangaServices.getAllManga(0, 10, 'title', true);
   const listManga = response
@@ -197,6 +194,8 @@ const CarouselSlider: React.FC<CarouselSliderProps> = ({
 }) => {
   const [slides, setSlides] = useState<SlideItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [activeSlideColor, setActiveSlideColor] = useState<string>('#276CEE');
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
   const carouselRef = React.useRef<any>(null);
 
   useEffect(() => {
@@ -231,11 +230,11 @@ const CarouselSlider: React.FC<CarouselSliderProps> = ({
   const settings = {
     dots: false,
     infinite: true,
-    speed: speed,
+    speed: 800, // Slower transition
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: autoplay,
-    autoplaySpeed: 4000,
+    autoplaySpeed: 6000, // Longer time on each slide
     centerMode: true,
     centerPadding: '13%',
     beforeChange: (current: number, next: number) => {},
@@ -248,14 +247,33 @@ const CarouselSlider: React.FC<CarouselSliderProps> = ({
     return await mangaServices.handleViewManga(id);
   };
   return (
-    <CarouselWrapper className="">
+    <CarouselWrapper activeSlideColor={activeSlideColor} className="">
       <div className="h-20" />
       <CarouselContainer>
-        <LeftArrow onClick={handlePrev}>
-          <LeftOutlined />
-        </LeftArrow>
+        <LeftClickArea onClick={handlePrev}>
+          <LeftOutlined
+            style={{ fontSize: '32px', color: 'white', opacity: 0.8 }}
+          />
+        </LeftClickArea>
 
-        <Carousel ref={carouselRef} {...settings}>
+        <Carousel
+          ref={carouselRef}
+          {...settings}
+          beforeChange={(current, next) => {
+            setCurrentSlide(next);
+            // Here we would use color extraction logic in a real implementation
+            // For now, let's use a simple color rotation
+            const colors = [
+              '#276CEE',
+              '#9C27B0',
+              '#2E7D32',
+              '#D32F2F',
+              '#FF6F00',
+              '#1565C0',
+            ];
+            setActiveSlideColor(colors[next % colors.length]);
+          }}
+        >
           {slides.map(slide => (
             <div key={slide.id}>
               <SlideContent background={slide.background}>
@@ -280,9 +298,11 @@ const CarouselSlider: React.FC<CarouselSliderProps> = ({
           ))}
         </Carousel>
 
-        <RightArrow onClick={handleNext}>
-          <RightOutlined />
-        </RightArrow>
+        <RightClickArea onClick={handleNext}>
+          <RightOutlined
+            style={{ fontSize: '32px', color: 'white', opacity: 0.8 }}
+          />
+        </RightClickArea>
       </CarouselContainer>
     </CarouselWrapper>
   );

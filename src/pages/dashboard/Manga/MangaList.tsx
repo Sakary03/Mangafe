@@ -31,7 +31,7 @@ import {
   updateManga,
   deleteManga,
 } from '../../../libs/mangaServices';
-
+import * as userSerices from '../../../libs/userService';
 const { Option } = Select;
 
 // Genre enum for the multi-select dropdown
@@ -92,13 +92,18 @@ const MangaList = () => {
   const [editingMangaId, setEditingMangaId] = useState<number | null>(null);
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
-
+  const userInfo = userSerices.getCurrentUser();
   // Fetch manga list
   const fetchManga = async (page = 1, limit = 10, search = '') => {
     try {
       setLoading(true);
       setTimeout(async () => {
-        const response = await getAllManga((page - 1) * limit, limit, 'createdAt', true);
+        const response = await getAllManga(
+          (page - 1) * limit,
+          limit,
+          'createdAt',
+          true,
+        );
         console.log('Fetched Manga: ', response);
         setData(response);
         setPagination({
@@ -159,7 +164,7 @@ const MangaList = () => {
       }
 
       setLoading(true);
-
+      console.log('Checking user info:', userInfo);
       if (modalType === 'add') {
         await createManga({
           title: values.title,
@@ -169,6 +174,7 @@ const MangaList = () => {
           genres: values.genres,
           poster: posterFile as File,
           background: backgroundFile as File,
+          userId: userInfo.userID, // Replace with actual user ID as needed
         });
         message.success('Manga added successfully');
       } else {
@@ -178,8 +184,9 @@ const MangaList = () => {
           description: values.description,
           overview: values.overview,
           genres: values.genres,
-          poster: posterFile as File, 
+          poster: posterFile as File,
           background: backgroundFile as File,
+          userId: userInfo.userID, // Replace with actual user ID as needed
         });
         message.success('Manga updated successfully');
       }

@@ -12,6 +12,8 @@ import * as MangaService from '../../../libs/mangaServices'
 import * as ChapterService from '../../../libs/chapterServices';
 import { parse } from 'path';
 import CommentSection from './CommentSection';
+import ReadingProgress from '../MangaDetails/ReadingProgress';
+import ReadingHistory from '../MangaDetails/ReadingHistory';
 const { Content } = Layout;
 
 export interface MangaDetail {

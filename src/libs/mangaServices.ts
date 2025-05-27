@@ -12,6 +12,15 @@ export interface MangaRequestDTO {
   userId: number;
 }
 
+export enum MangaStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  HIDDEN = 'HIDDEN',
+  DELETED = 'DELETED',
+  UPDATE = 'UPDATE',
+}
+
 export interface MangaItem {
   id: number;
   title: string;
@@ -22,8 +31,23 @@ export interface MangaItem {
   backgroundUrl: string;
   createdAt: string;
   updatedAt: string;
-  chapters: any[]; // You can define a more specific type if needed
+  chapters?: any[]; // You can define a more specific type if needed
   genres: string[];
+  readTimes?: number;
+  status: MangaStatus | string;
+  uploadedBy?: {
+    id: number;
+    fullName: string;
+    userName: string;
+    email: string;
+    address?: string;
+    dob?: string;
+    password?: string;
+    avatarUrl?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    role: string;
+  };
 }
 
 export const createManga = async (payload: MangaRequestDTO) => {
@@ -73,7 +97,6 @@ export interface SearchMangaDTO {
   status?: string[];
   uploadedBy?: number;
 }
-
 
 export const searchManga = async (
   query: SearchMangaDTO,
@@ -144,5 +167,10 @@ export const deleteManga = async (id: number) => {
 
 export const handleViewManga = async (id: number) => {
   const response = await api.put(`/manga/${id}/read`);
+  return response.data;
+};
+
+export const updateMangaStatus = async (id: number, status: string) => {
+  const response = await api.put(`/manga/${id}/status?status=${status}`);
   return response.data;
 };
