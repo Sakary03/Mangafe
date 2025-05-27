@@ -30,11 +30,14 @@ import {
   createManga,
   updateManga,
   deleteManga,
+  searchManga,
+  SearchMangaDTO,
+  MangaStatus,
+  updateMangaStatus,
 } from '../../../libs/mangaServices';
 import * as userSerices from '../../../libs/userService';
 const { Option } = Select;
 
-// Genre enum for the multi-select dropdown
 export const MangaGenre: Record<string, string> = {
   SHONEN: 'SHONEN',
   SHOJO: 'SHOJO',
@@ -73,6 +76,7 @@ const MangaList = () => {
     overview: string;
     author: string;
     status: string;
+    adminStatus?: string;
     posterUrl: string;
     backgroundUrl: string;
     chapterCount: number;
@@ -93,26 +97,72 @@ const MangaList = () => {
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
   const userInfo = userSerices.getCurrentUser();
-  // Fetch manga list
-  const fetchManga = async (page = 1, limit = 10, search = '') => {
+
+  // Fetch total manga count
+  const fetchTotalMangaCount = async () => {
     try {
-      setLoading(true);
-      setTimeout(async () => {
-        const response = await getAllManga(
-          (page - 1) * limit,
-          limit,
-          'createdAt',
-          true,
-        );
-        console.log('Fetched Manga: ', response);
-        setData(response);
+      const response = await getAllManga(0, 1000, 'createdAt', true);
+      if (response && typeof response === 'object') {
+        if (response.data && Array.isArray(response.data)) {
+          return response.data.length;
+        } else if (Array.isArray(response)) {
+          return response.length;
+        }
+      }
+      return 0;
+    } catch (error) {
+      console.error('Error fetching total manga count:', error);
+      return 0;
+    }
+  };
+
+  // Fetch manga list
+  const fetchManga = async (page = 1, limit = 10) => {
+    try {
+      setLoading(true); // Get total count first
+      const totalCount = await fetchTotalMangaCount();
+
+      // Calculate correct offset based on page number
+      const offset = page - 1;
+      console.log(
+        `Fetching page ${page} with offset ${offset} and limit ${limit}`,
+      );
+
+      const response = await getAllManga(offset, limit, 'createdAt', true);
+      console.log('Fetched Manga: ', response);
+
+      if (response && typeof response === 'object') {
+        if (response.data && Array.isArray(response.data)) {
+          setData(response.data);
+          setPagination({
+            ...pagination,
+            current: page,
+            pageSize: limit,
+            total: totalCount,
+          });
+        } else if (Array.isArray(response)) {
+          setData(response);
+          setPagination({
+            ...pagination,
+            current: page,
+            pageSize: limit,
+            total: totalCount,
+          });
+          console.log('Setting total from total count to:', totalCount);
+        }
+      } else {
+        // Fallback for unexpected response format
+        const responseData = Array.isArray(response) ? response : [];
+        setData(responseData);
         setPagination({
           ...pagination,
           current: page,
-          total: 50, // Mock total count
+          pageSize: limit,
+          total: totalCount,
         });
-        setLoading(false);
-      }, 500);
+        console.log('Setting total from fallback to:', totalCount);
+      }
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching manga:', error);
       message.error('Failed to fetch manga list');
@@ -120,16 +170,99 @@ const MangaList = () => {
     }
   };
 
+  // Search manga by title
+  const searchMangaByTitle = async (page = 1, limit = 10, title = '') => {
+    try {
+      setLoading(true);
+
+      const searchQuery: SearchMangaDTO = {
+        title: title,
+      };
+
+      // Get a count of all matching manga for accurate pagination
+      const countResponse = await searchManga(
+        searchQuery,
+        0,
+        1000, // Large limit to get all results
+      );
+
+      // Calculate total based on the full result set
+      let totalCount = 0;
+      if (
+        countResponse &&
+        countResponse.data &&
+        Array.isArray(countResponse.data)
+      ) {
+        totalCount = countResponse.data.length;
+      } else if (Array.isArray(countResponse)) {
+        totalCount = countResponse.length;
+      }
+
+      // Now fetch the paginated results
+      const response = await searchManga(searchQuery, page - 1, limit);
+
+      console.log('Search Results:', response);
+
+      if (response && response.data && Array.isArray(response.data)) {
+        setData(response.data);
+        setPagination({
+          ...pagination,
+          current: page,
+          pageSize: limit,
+          total: totalCount,
+        });
+        console.log('Search results total:', totalCount);
+      } else {
+        // Fallback if response structure is different
+        const responseData = Array.isArray(response) ? response : [];
+        setData(responseData);
+        setPagination({
+          ...pagination,
+          current: page,
+          pageSize: limit,
+          total: totalCount,
+        });
+        console.log('Search results total:', totalCount);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error searching manga:', error);
+      message.error('Failed to search manga');
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchManga(pagination.current, pagination.pageSize, searchText);
+    fetchManga(pagination.current, pagination.pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleTableChange = (newPagination: any) => {
-    fetchManga(newPagination.current, newPagination.pageSize, searchText);
+    console.log('Pagination change:', newPagination);
+
+    // Ensure we're getting a valid page number and size
+    const pageNumber = newPagination.current || 1;
+    const pageSize = newPagination.pageSize || 10;
+
+    console.log(`Table change: Page ${pageNumber}, Size ${pageSize}`);
+
+    // Make sure we're using the provided pagination values consistently
+    if (searchText.trim()) {
+      searchMangaByTitle(pageNumber, pageSize, searchText);
+    } else {
+      fetchManga(pageNumber, pageSize);
+    }
   };
 
   const handleSearch = () => {
-    fetchManga(1, pagination.pageSize, searchText);
+    if (searchText.trim()) {
+      // Use search service when search text is provided
+      searchMangaByTitle(1, pagination.pageSize, searchText);
+    } else {
+      // If search text is empty, use regular fetch
+      fetchManga(1, pagination.pageSize);
+    }
   };
 
   const showAddModal = () => {
@@ -217,6 +350,21 @@ const MangaList = () => {
     }
   };
 
+  const handleStatusChange = async (id: number, status: string) => {
+    try {
+      setLoading(true);
+      await updateMangaStatus(id, status);
+      message.success(`Manga status updated to ${status}`);
+      // Refetch the data to update the UI
+      fetchManga(pagination.current, pagination.pageSize, searchText);
+    } catch (error) {
+      console.error('Error updating manga status:', error);
+      message.error('Failed to update manga status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const normFile = (e: any) => {
     if (Array.isArray(e)) {
       return e;
@@ -229,7 +377,20 @@ const MangaList = () => {
       setPosterFile(file);
       return false;
     },
-    fileList: posterFile ? [posterFile] : [],
+    fileList: posterFile
+      ? [
+          {
+            uid: '-1',
+            name: posterFile.name,
+            status: 'done',
+            url:
+              posterFile instanceof File
+                ? URL.createObjectURL(posterFile)
+                : undefined,
+            originFileObj: posterFile as any,
+          },
+        ]
+      : [],
   };
 
   const backgroundProps = {
@@ -237,7 +398,20 @@ const MangaList = () => {
       setBackgroundFile(file);
       return false;
     },
-    fileList: backgroundFile ? [backgroundFile] : [],
+    fileList: backgroundFile
+      ? [
+          {
+            uid: '-1',
+            name: backgroundFile.name,
+            status: 'done',
+            url:
+              backgroundFile instanceof File
+                ? URL.createObjectURL(backgroundFile)
+                : undefined,
+            originFileObj: backgroundFile as any,
+          },
+        ]
+      : [],
   };
 
   const columns = [
@@ -279,6 +453,25 @@ const MangaList = () => {
         <Tag color={status === 'active' ? 'green' : 'blue'}>
           {status === 'active' ? 'Active' : 'Completed'}
         </Tag>
+      ),
+    },
+    {
+      title: 'Admin Status',
+      dataIndex: 'status',
+      key: 'adminStatus',
+      render: (_: any, record: Manga) => (
+        <Select
+          defaultValue={record.status || 'PENDING'}
+          style={{ width: 120 }}
+          onChange={value => handleStatusChange(record.id, value)}
+          disabled={loading}
+        >
+          {Object.values(MangaStatus).map(status => (
+            <Option key={status} value={status}>
+              {status}
+            </Option>
+          ))}
+        </Select>
       ),
     },
     {
@@ -342,7 +535,22 @@ const MangaList = () => {
           columns={columns}
           dataSource={data}
           rowKey="id"
-          pagination={pagination}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10', '20', '50'],
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`,
+            size: 'small',
+            simple: true,
+            showQuickJumper: true,
+            itemRender: (page, type, originalElement) => {
+              if (type === 'page') {
+                return <Button size="small">{page}</Button>;
+              }
+              return originalElement;
+            },
+          }}
           loading={loading}
           onChange={handleTableChange}
         />

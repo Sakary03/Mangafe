@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable prefer-const */
+import axios from 'axios';
 import api from './api';
 import qs from 'qs'; // Install with: npm install qs
 
@@ -173,4 +176,26 @@ export const handleViewManga = async (id: number) => {
 export const updateMangaStatus = async (id: number, status: string) => {
   const response = await api.put(`/manga/${id}/status?status=${status}`);
   return response.data;
+};
+
+export const recommendManga = async (ids: number[], limit: number = 10) => {
+  const params = new URLSearchParams();
+
+  ids.forEach(id => {
+    params.append('ids', id.toString());
+  });
+  params.append('top_n', limit.toString());
+
+  const res = await axios
+    .get('http://localhost:8000/recommend', {
+      params: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+    .catch(error => {
+      console.error('Error fetching recommendations:', error);
+    });
+  console.log('Checking recommend response: ', res.data.recommendations);
+  return res.data.recommendations;
 };
