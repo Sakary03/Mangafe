@@ -42,11 +42,13 @@ const MangaBanner: React.FC<MangaBannerProps> = ({
       return;
     }
     if (!isFollowing) {
-      followService.userFollowNewManga(userId, id);
-      setIsFollowing(true);
+      await followService.userFollowNewManga(userId, id);
+      await setIsFollowing(true);
+      window.location.reload()
     } else {
-      followService.unfollowManga(userId, id);
-      setIsFollowing(false);
+      await followService.unfollowManga(userId, id);
+      await setIsFollowing(false);
+      window.location.reload()
     }
     return true;
   };
