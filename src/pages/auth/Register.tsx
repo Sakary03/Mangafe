@@ -106,11 +106,12 @@ const Register: React.FC = () => {
               >
                 <div className="h-full bg-gradient-to-br from-blue-600/30 to-indigo-600/30 p-12 flex flex-col justify-center backdrop-blur-sm">
                   <h1 className="text-4xl font-bold text-white drop-shadow-md mb-4">
-                    Chào mừng bạn đến với Thư Viện Truyện
+                    Chào mừng bạn đến với Mangaka{' '}
                   </h1>
                   <p className="text-lg text-white/90 mb-8 max-w-xl">
-                    Khám phá hàng ngàn bộ truyện hấp dẫn mọi thể loại. Đăng ký tài khoản để lưu trữ
-                    truyện yêu thích và tiếp tục đọc bất cứ lúc nào bạn muốn.
+                    Khám phá hàng ngàn bộ truyện hấp dẫn mọi thể loại. Đăng ký
+                    tài khoản để lưu trữ truyện yêu thích và tiếp tục đọc bất cứ
+                    lúc nào bạn muốn.
                   </p>
                   <div className="space-y-4 text-white/90">
                     <div className="flex items-center">
@@ -202,7 +203,9 @@ const Register: React.FC = () => {
                       ) : (
                         <div className="flex flex-col items-center justify-center w-28 h-28 border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:border-blue-500 transition-colors">
                           <PlusOutlined className="text-2xl text-gray-400" />
-                          <div className="mt-2 text-sm text-gray-500">Upload Photo</div>
+                          <div className="mt-2 text-sm text-gray-500">
+                            Upload Photo
+                          </div>
                         </div>
                       )}
                     </Upload>
@@ -213,7 +216,12 @@ const Register: React.FC = () => {
                       <Form.Item
                         name="username"
                         label="Username"
-                        rules={[{ required: true, message: 'Please input your username!' }]}
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please input your username!',
+                          },
+                        ]}
                       >
                         <Input
                           prefix={<UserOutlined className="text-gray-400" />}
@@ -228,8 +236,14 @@ const Register: React.FC = () => {
                         name="email"
                         label="Email"
                         rules={[
-                          { required: true, message: 'Please input your email!' },
-                          { type: 'email', message: 'Please enter a valid email!' },
+                          {
+                            required: true,
+                            message: 'Please input your email!',
+                          },
+                          {
+                            type: 'email',
+                            message: 'Please enter a valid email!',
+                          },
                         ]}
                       >
                         <Input
@@ -246,8 +260,14 @@ const Register: React.FC = () => {
                     name="password"
                     label="Password"
                     rules={[
-                      { required: true, message: 'Please input your password!' },
-                      { min: 6, message: 'Password must be at least 6 characters!' },
+                      {
+                        required: true,
+                        message: 'Please input your password!',
+                      },
+                      {
+                        min: 6,
+                        message: 'Password must be at least 6 characters!',
+                      },
                     ]}
                   >
                     <Input.Password
@@ -261,7 +281,12 @@ const Register: React.FC = () => {
                   <Form.Item
                     name="name"
                     label="Full Name"
-                    rules={[{ required: true, message: 'Please input your full name!' }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input your full name!',
+                      },
+                    ]}
                   >
                     <Input
                       prefix={<UserOutlined className="text-gray-400" />}
@@ -276,11 +301,18 @@ const Register: React.FC = () => {
                       <Form.Item
                         name="date"
                         label="Date of Birth"
-                        rules={[{ required: true, message: 'Please select your date of birth!' }]}
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please select your date of birth!',
+                          },
+                        ]}
                       >
                         <DatePicker
                           className="w-full rounded-lg"
-                          prefix={<CalendarOutlined className="text-gray-400" />}
+                          prefix={
+                            <CalendarOutlined className="text-gray-400" />
+                          }
                           placeholder="Select date"
                           size="large"
                         />
@@ -289,8 +321,12 @@ const Register: React.FC = () => {
                     <Col xs={24} sm={12}>
                       <Form.Item name="role" label="Role" initialValue="USER">
                         <Select size="large" className="rounded-lg">
-                          <Select.Option value={UserRole.USER}>User</Select.Option>
-                          <Select.Option value={UserRole.ADMIN}>Admin</Select.Option>
+                          <Select.Option value={UserRole.USER}>
+                            User
+                          </Select.Option>
+                          <Select.Option value={UserRole.ADMIN}>
+                            Admin
+                          </Select.Option>
                         </Select>
                       </Form.Item>
                     </Col>
@@ -299,7 +335,9 @@ const Register: React.FC = () => {
                   <Form.Item
                     name="address"
                     label="Address"
-                    rules={[{ required: true, message: 'Please input your address!' }]}
+                    rules={[
+                      { required: true, message: 'Please input your address!' },
+                    ]}
                   >
                     <Input
                       prefix={<HomeOutlined className="text-gray-400" />}
@@ -321,8 +359,13 @@ const Register: React.FC = () => {
                   </Form.Item>
 
                   <div className="text-center mt-4">
-                    <span className="text-gray-600">Already have an account? </span>
-                    <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <span className="text-gray-600">
+                      Already have an account?{' '}
+                    </span>
+                    <a
+                      href="/login"
+                      className="text-blue-600 hover:text-blue-700 font-medium"
+                    >
                       Sign in
                     </a>
                   </div>

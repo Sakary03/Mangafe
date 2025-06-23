@@ -111,7 +111,9 @@ const Login: React.FC = () => {
             <Input.Password
               prefix={<LockOutlined className="text-gray-400" />}
               placeholder="Enter your password"
-              iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+              iconRender={visible =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
               className="rounded-lg"
             />
           </Form.Item>
@@ -122,7 +124,7 @@ const Login: React.FC = () => {
             </Form.Item>
             <a
               className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              onClick={() => navigate('/forgot-password')}
+              onClick={() => navigate('/auth/forgot-password')}
             >
               Forgot password?
             </a>
@@ -143,23 +145,6 @@ const Login: React.FC = () => {
           <Divider plain>
             <span className="text-gray-400 text-sm">OR</span>
           </Divider>
-
-          <div className="flex justify-center gap-4 mt-4">
-            <Button
-              icon={<span className="mr-2">G</span>}
-              className="flex items-center justify-center border border-gray-300 rounded-lg"
-              onClick={() => message.info('Google login not implemented yet')}
-            >
-              Google
-            </Button>
-            <Button
-              icon={<span className="mr-2">F</span>}
-              className="flex items-center justify-center border border-gray-300 rounded-lg"
-              onClick={() => message.info('Facebook login not implemented yet')}
-            >
-              Facebook
-            </Button>
-          </div>
 
           <div className="text-center mt-8">
             <Text className="text-gray-600">

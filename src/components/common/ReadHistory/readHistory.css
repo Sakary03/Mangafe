@@ -1,0 +1,68 @@
+/* Custom styles for ReadHistory component */
+
+/* Carousel styles */
+.recommended-carousel .slick-slide {
+  padding: 0 8px;
+}
+
+.recommended-carousel .slick-arrow.slick-prev,
+.recommended-carousel .slick-arrow.slick-next {
+  color: #1890ff;
+  background-color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+.recommended-carousel .slick-arrow.slick-prev {
+  left: -16px;
+}
+
+.recommended-carousel .slick-arrow.slick-next {
+  right: -16px;
+}
+
+.recommended-carousel .slick-arrow.slick-prev:hover,
+.recommended-carousel .slick-arrow.slick-next:hover {
+  background-color: #e6f7ff;
+}
+
+.custom-dots {
+  margin-bottom: 20px;
+}
+
+.custom-dots li button {
+  background-color: #d9d9d9 !important;
+}
+
+.custom-dots li.slick-active button {
+  background-color: #1890ff !important;
+}
+
+/* Card hover effects */
+.recommended-carousel .ant-card:hover {
+  transform: translateY(-5px);
+  transition: transform 0.3s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Section fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mt-10 {
+  animation: fadeIn 0.8s ease-in-out;
+}

@@ -154,7 +154,7 @@ export const updateManga = async (id: number, payload: MangaRequestDTO) => {
 
   formData.append('poster', payload.poster);
   formData.append('background', payload.background);
-
+  formData.append('userId', payload.userId.toString());
   const response = await api.put(`/manga/update/${id}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',

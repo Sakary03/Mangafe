@@ -13,11 +13,18 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import * as userServices from '../../../libs/userService';
 import * as commentServices from '../../../libs/commentServices';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// Set the default timezone to GMT+7
+dayjs.tz.setDefault('Asia/Bangkok');
 
 interface CommentSectionProps {
   mangaId: number;
@@ -63,22 +70,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
     fetchUserInfo();
   }, [messageApi]);
 
-  // Load comments
-  useEffect(() => {
-    loadComments();
-  }, [mangaId]);
-
-  // Focus on comment input when replying or editing
-  useEffect(() => {
-    if (
-      (replyTo !== null || editingComment !== null) &&
-      commentInputRef.current
-    ) {
-      commentInputRef.current.focus();
-    }
-  }, [replyTo, editingComment]);
-
-  const loadComments = async () => {
+  // Define loadComments with useCallback
+  const loadComments = React.useCallback(async () => {
     try {
       setLoading(true);
       const commentList = await commentServices.getCommentsByManga(mangaId);
@@ -89,7 +82,22 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mangaId, messageApi]);
+
+  // Load comments
+  useEffect(() => {
+    loadComments();
+  }, [loadComments]);
+
+  // Focus on comment input when replying or editing
+  useEffect(() => {
+    if (
+      (replyTo !== null || editingComment !== null) &&
+      commentInputRef.current
+    ) {
+      commentInputRef.current.focus();
+    }
+  }, [replyTo, editingComment]);
 
   const checkUserLoggedIn = (): boolean => {
     if (!isLoggedIn) {
@@ -470,10 +478,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
                 {user?.userName || 'Unknown User'}
               </span>
               <Tooltip
-                title={dayjs(comment.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                title={dayjs.utc(comment.createdAt).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss')}
               >
                 <span className="text-gray-400 text-sm ml-2">
-                  {dayjs(comment.createdAt).fromNow()}
+                  {dayjs.utc(comment.createdAt).tz('Asia/Bangkok').fromNow()}
                 </span>
               </Tooltip>
               {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
@@ -562,7 +570,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ mangaId }) => {
               {/* Current User Avatar */}
               <div className="mr-3 flex-shrink-0 mt-1">
                 <Avatar
-                  src={currentUser?.avatar}
+                  src={currentUser?.avatarUrl}
                   alt={currentUser?.userName}
                   className="border border-gray-200"
                 >

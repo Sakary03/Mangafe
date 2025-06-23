@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from 'react';
 import { Tag, Typography, Tooltip } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { EyeOutlined } from '@ant-design/icons';
+import * as mangaService from '../../../libs/mangaServices';
 
 const { Text } = Typography;
 
@@ -35,9 +37,17 @@ interface MostViewCardProps {
 
 export function MostViewCard({ manga, rank }: MostViewCardProps) {
   const [imageError, setImageError] = useState(false);
+  const navigate = useNavigate();
 
   const handleImageError = () => {
     setImageError(true);
+  };
+
+  const handleCardClick = async () => {
+    // Track view by calling the API
+    await mangaService.handleViewManga(manga.id);
+    console.log(`Navigating to manga ${manga.id}`);
+    navigate(`/manga/${manga.id}`);
   };
 
   const getGenreColor = (genre: string) => {
@@ -62,91 +72,60 @@ export function MostViewCard({ manga, rank }: MostViewCardProps) {
     .join(', ');
 
   return (
-    <Link to={`/manga/${manga.id}`}>
-      <div className="relative group w-full">
-        {/* Horizontal card layout */}
-        <div className="flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 h-32">
-          {/* Rank badge */}
-          <div
-            className="absolute top-2 left-2 w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-600 z-10 
-                     flex items-center justify-center text-white font-bold rounded-full shadow-md text-sm"
-          >
-            {rank}
+    <div
+      className="bg-white rounded-lg shadow-md overflow-hidden flex h-36 transform transition-all duration-300 hover:shadow-xl hover:scale-102 hover:-translate-y-1 cursor-pointer"
+      onClick={handleCardClick}
+    >
+      {/* Rank indicator */}
+      <div className="w-12 bg-blue-600 flex items-center justify-center">
+        <span className="text-white font-bold text-2xl">{rank}</span>
+      </div>
+
+      {/* Image */}
+      <div className="w-24 h-full flex-shrink-0">
+        <img
+          src={imageError ? `/api/placeholder/240/320` : manga.posterUrl}
+          alt={manga.title}
+          onError={handleImageError}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 p-3 flex flex-col justify-between">
+        <div>
+          <h3 className="font-bold text-lg line-clamp-1">{manga.title}</h3>
+          <p className="text-gray-600 text-sm line-clamp-1">
+            By {manga.author || 'Unknown'}
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex gap-1">
+            {manga.genres &&
+              manga.genres.slice(0, 2).map((genre, index) => (
+                <span
+                  key={index}
+                  className="text-xs bg-blue-50 text-blue-600 rounded px-1 py-0.5"
+                >
+                  {genre}
+                </span>
+              ))}
+            {manga.genres && manga.genres.length > 2 && (
+              <span className="text-xs bg-gray-100 text-gray-600 rounded px-1 py-0.5">
+                +{manga.genres.length - 2}
+              </span>
+            )}
           </div>
 
-          {/* Left side - Poster image */}
-          <div className="w-24 h-32 flex-shrink-0 relative">
-            <img
-              alt={manga.title}
-              src={imageError ? `/api/placeholder/240/320` : manga.posterUrl}
-              onError={handleImageError}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          {/* Right side - Content */}
-          <div className="flex-grow p-3 flex flex-col justify-between">
-            {/* Title and author */}
-            <div>
-              <div className="font-bold text-base line-clamp-1 mb-1">
-                {manga.title}
-              </div>
-              <div className="text-xs text-gray-600 mb-2">
-                {manga.author || 'Unknown Author'}
-              </div>
-            </div>
-
-            {/* Stats and tags */}
-            <div className="space-y-2">
-              {/* Stats row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center bg-blue-50 rounded-full px-2 py-0.5">
-                  <EyeOutlined className="mr-1 text-blue-500 text-xs" />
-                  <Text className="text-xs font-medium text-blue-700">
-                    {manga.readTimes}
-                  </Text>
-                </div>
-
-                {manga.status === 'APPROVED' ? (
-                  <Tag
-                    color="green"
-                    className="rounded-full py-0 px-2 text-xs m-0"
-                  >
-                    {manga.status}
-                  </Tag>
-                ) : (
-                  <Tag
-                    color="gold"
-                    className="rounded-full py-0 px-2 text-xs m-0"
-                  >
-                    {manga.status}
-                  </Tag>
-                )}
-              </div>
-
-              {/* Genre tags */}
-              <div className="flex flex-wrap gap-1">
-                {manga.genres.slice(0, 2).map((genre, idx) => (
-                  <Tag
-                    color={getGenreColor(genre)}
-                    key={idx}
-                    className="rounded-full text-xs py-0 px-2 m-0"
-                  >
-                    {genre.replace(/_/g, ' ')}
-                  </Tag>
-                ))}
-                {manga.genres.length > 2 && (
-                  <Tooltip title={allGenresText} placement="bottom">
-                    <Tag className="rounded-full text-xs py-0 px-2 m-0 cursor-pointer">
-                      +{manga.genres.length - 2}
-                    </Tag>
-                  </Tooltip>
-                )}
-              </div>
-            </div>
+          <div className="flex items-center">
+            <EyeOutlined className="mr-1 text-blue-500 text-xs" />
+            <span className="text-sm text-gray-600 ml-1">
+              {manga.readTimes || 0}
+            </span>
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

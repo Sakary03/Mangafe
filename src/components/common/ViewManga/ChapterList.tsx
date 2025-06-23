@@ -9,43 +9,38 @@ interface ChapterListProps {
   chapters: Chapter[];
   mangaId: number;
 }
+
 const ChapterList: React.FC<ChapterListProps> = ({ chapters, mangaId }) => {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const [readChapters, setReadChapters] = useState<number[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchReadingHistory = async () => {
       if (!currentUser || !currentUser.userID) return;
 
       try {
-        setLoading(true);
         const history = await historyService.getMangaReadingHistory(
           currentUser.userID,
           mangaId,
         );
-        const readChapterIds = history.map(item => item.chapter.id);
+
+        const readChapterIds = Array.from(
+          new Set(history.map(item => item.chapter.id)),
+        );
+
         setReadChapters(readChapterIds);
+        console.log('Read chapters:', readChapterIds);
       } catch (error) {
         console.error('Error fetching reading history:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchReadingHistory();
-  }, [mangaId, currentUser]);
+  }, []);
 
   const handleChapterClick = async (chapter: Chapter) => {
     if (currentUser && currentUser.userID) {
-      console.log('Checking currentUser', currentUser);
-      console.log(
-        'Checking parameters',
-        mangaId,
-        chapter.id,
-        currentUser.userID,
-      );
       try {
         await historyService.recordChapterRead(
           currentUser.userID,
@@ -92,7 +87,6 @@ const ChapterList: React.FC<ChapterListProps> = ({ chapters, mangaId }) => {
               <p className="text-sm text-gray-500">{chapter.title}</p>
             </div>
             <div className="text-right text-sm text-gray-500">
-              <p>{chapter.readTimes} lượt xem</p>
               <p>{new Date(chapter.createdAt).toLocaleDateString('vi-VN')}</p>
             </div>
           </div>

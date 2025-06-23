@@ -633,44 +633,6 @@ const UserProfilePage: React.FC = () => {
           </Col>
         </Row>
 
-        {/* Activity Timeline */}
-        <Card className="shadow-sm mt-8">
-          <Title level={4} className="mb-6">
-            Recent Activity
-          </Title>
-          <div className="space-y-4">
-            <div className="flex items-start">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-                <EditOutlined className="text-blue-600" />
-              </div>
-              <div>
-                <Text strong>Updated profile picture</Text>
-                <div className="text-gray-500 text-sm">2 hours ago</div>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-4">
-                <UserOutlined className="text-green-600" />
-              </div>
-              <div>
-                <Text strong>Followed 5 new users</Text>
-                <div className="text-gray-500 text-sm">
-                  Yesterday at 2:45 PM
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-4">
-                <SettingOutlined className="text-purple-600" />
-              </div>
-              <div>
-                <Text strong>Changed account settings</Text>
-                <div className="text-gray-500 text-sm">3 days ago</div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
         {/* Uploaded Manga Section with modern design */}
         <div className="mt-8">
           <Card

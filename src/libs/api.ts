@@ -108,4 +108,23 @@ export const getRememberedEmail = (): string | null => {
   return localStorage.getItem('rememberedEmail');
 };
 
+import {
+  ForgotPasswordRequestDTO,
+  ResetPasswordRequestDTO,
+} from '../types/Auth';
+
+// Function for requesting a password reset email
+export const requestPasswordReset = async (email: string) => {
+  const requestDTO: ForgotPasswordRequestDTO = { email };
+  const response = await api.post('/auth/forgot-password', requestDTO);
+  return response.data;
+};
+
+// Function for resetting password with token
+export const resetPassword = async (token: string, newPassword: string) => {
+  const requestDTO: ResetPasswordRequestDTO = { token, newPassword };
+  const response = await api.post('/auth/reset-password', requestDTO);
+  return response.data;
+};
+
 export default api;

@@ -2,6 +2,8 @@ import { RouteObject } from 'react-router-dom';
 import HomePage from '../components/common/HomePage';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
+import ForgotPassword from '../pages/auth/ForgotPassword';
+import ResetPassword from '../pages/auth/ResetPassword';
 import NotFoundPage from '../pages/common/NotFoundPage';
 import UserProfile from '../pages/common/UserProfile';
 import UserLayout from '../layouts/UserLayout';
@@ -19,6 +21,8 @@ import UserProfilePage from '../pages/dashboard/User/Profile/UserProfilePage';
 import FollowingPage from '../pages/user/FollowingPage';
 import UserChapterUploaded from '../pages/dashboard/UserChapterUploaded';
 import UserMangaUploaded from '../pages/dashboard/UserMangaUploaded';
+import ReadHistory from '../components/common/ReadHistory/ReadHistory';
+import UploadedManga from '../components/common/UploadedManga/UploadedManga';
 
 const routes: RouteObject[] = [
   {
@@ -28,6 +32,8 @@ const routes: RouteObject[] = [
       { path: '', element: <HomePage /> },
       { path: 'auth/login', element: <Login /> },
       { path: 'auth/register', element: <Register /> },
+      { path: 'auth/forgot-password', element: <ForgotPassword /> },
+      { path: 'reset-password', element: <ResetPassword /> },
       { path: 'manga/:mangaId', element: <MangaDetailPage /> },
       {
         path: 'manga/:mangaId/chapter/:chapterIndex',
@@ -45,6 +51,14 @@ const routes: RouteObject[] = [
       {
         path: 'user/following',
         element: <FollowingPage />,
+      },
+      {
+        path: 'user/history',
+        element: <ReadHistory />,
+      },
+      {
+        path: 'user/uploaded',
+        element: <UploadedManga />,
       },
     ],
   },

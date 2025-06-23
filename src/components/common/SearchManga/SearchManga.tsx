@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Input, Empty, Tabs, Checkbox, Dropdown, Space, Button, Tag } from 'antd';
-import { 
-  SearchOutlined, 
+import {
+  Input,
+  Empty,
+  Tabs,
+  Checkbox,
+  Dropdown,
+  Space,
+  Button,
+  Tag,
+} from 'antd';
+import {
+  SearchOutlined,
   CloseCircleOutlined,
-  DownOutlined
+  DownOutlined,
 } from '@ant-design/icons';
 import * as mangaService from '../../../libs/mangaServices';
 import * as chapterService from '../../../libs/chapterServices';
 import { MangaGenres } from '../../../types/MangaGenres';
+
 const SearchManga: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,7 +26,9 @@ const SearchManga: React.FC = () => {
   const [searchResults, setSearchResults] = useState<mangaService.MangaItem[]>(
     [],
   );
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState<
+    'all' | 'titles' | 'users' | 'authors'
+  >('all');
   const [loading, setLoading] = useState(false);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [genreDropdownVisible, setGenreDropdownVisible] = useState(false);
@@ -26,11 +38,91 @@ const SearchManga: React.FC = () => {
 
   const allGenres = Object.values(MangaGenres);
 
+  // Define performSearch with useCallback before using it in useEffect
+  const performSearch = useCallback(
+    async (query: string) => {
+      // if (!query.trim() && selectedGenres.length === 0) {
+      //   setSearchResults([]);
+      //   return;
+      // }
+
+      setLoading(true);
+      try {
+        const searchDto: mangaService.SearchMangaDTO = {};
+
+        switch (activeTab) {
+          case 'titles':
+            searchDto.title = query;
+            break;
+          case 'authors':
+            searchDto.author = query;
+            break;
+          case 'users': {
+            // Parse query as a number if it's a user ID
+            const userId = parseInt(query, 10);
+            if (!isNaN(userId)) {
+              searchDto.uploadedBy = userId;
+            }
+            break;
+          }
+          default:
+            searchDto.title = query;
+            searchDto.author = query;
+            break;
+        }
+
+        searchDto.genres = selectedGenres.length > 0 ? selectedGenres : [];
+        searchDto.status = ['APPROVED'];
+        const results = await mangaService.searchManga(searchDto, 0, 20);
+        setSearchResults(results);
+
+        // Fetch chapter counts for the manga in the results
+        fetchChapterCounts(results);
+      } catch (error) {
+        console.error('Error searching manga:', error);
+        setSearchResults([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeTab, selectedGenres],
+  );
+
   useEffect(() => {
+    // Handle URL query parameters
     const queryParams = new URLSearchParams(location.search);
     const q = queryParams.get('q') || '';
+    const genreParam = queryParams.get('genres');
+    const tabParam = queryParams.get('tab') as
+      | 'all'
+      | 'titles'
+      | 'users'
+      | 'authors'
+      | null;
+
+    // Update state based on URL parameters
     setSearchQuery(q);
-  }, [location.search]);
+
+    // Set tab if present in URL
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+
+    // Handle genre parameter - add to selected genres if not already included
+    if (genreParam && !selectedGenres.includes(genreParam)) {
+      setSelectedGenres(prev => [...prev, genreParam]);
+    }
+
+    // Perform initial search based on URL parameters
+    // Small delay to ensure state updates before search
+    const timer = setTimeout(() => {
+      performSearch(q);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [location.search, performSearch, selectedGenres]);
+
+  // Remove the initialFilters useEffect as we're now using URL params
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -38,51 +130,7 @@ const SearchManga: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery, activeTab, selectedGenres]);
-
-  const performSearch = async (query: string) => {
-    // if (!query.trim() && selectedGenres.length === 0) {
-    //   setSearchResults([]);
-    //   return;
-    // }
-
-    setLoading(true);
-    try {
-      const searchDto: mangaService.SearchMangaDTO = {};
-
-      switch (activeTab) {
-        case 'titles':
-          searchDto.title = query;
-          break;
-        case 'authors':
-          searchDto.author = query;
-          break;
-        case 'users':
-          searchDto.uploadedBy = query;
-          break;
-        default:
-          searchDto.title = query;
-          searchDto.author = query;
-          break;
-      }
-
-      searchDto.genres = selectedGenres.length > 0 ? selectedGenres : [];
-      searchDto.status = ['APPROVED'];
-      const results = await mangaService.searchManga(searchDto, 0, 20);
-      setSearchResults(results);
-
-      // Fetch chapter counts for the manga in the results
-      fetchChapterCounts(results);
-
-      // Fetch chapter counts for the manga in the results
-      fetchChapterCounts(results);
-    } catch (error) {
-      console.error('Error searching manga:', error);
-      setSearchResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [searchQuery, activeTab, selectedGenres, performSearch]);
 
   // Function to fetch chapter counts for all manga in the search results
   const fetchChapterCounts = async (mangaResults: mangaService.MangaItem[]) => {
@@ -110,27 +158,71 @@ const SearchManga: React.FC = () => {
   };
 
   const handleTabChange = (key: string) => {
-    setActiveTab(key);
+    setActiveTab(key as 'all' | 'titles' | 'users' | 'authors');
   };
 
   const toggleGenre = (genre: string) => {
     setSelectedGenres(prev => {
+      let newGenres;
       if (prev.includes(genre)) {
-        return prev.filter(g => g !== genre);
+        newGenres = prev.filter(g => g !== genre);
       } else {
-        return [...prev, genre];
+        newGenres = [...prev, genre];
       }
+
+      // Update URL params to reflect the current selected genres
+      updateUrlWithCurrentFilters(searchQuery, newGenres, activeTab);
+
+      return newGenres;
     });
+  };
+
+  // Helper function to update URL without triggering navigation
+  const updateUrlWithCurrentFilters = (
+    query: string,
+    genres: string[],
+    tab: string,
+  ) => {
+    const params = new URLSearchParams();
+
+    if (query) {
+      params.set('q', query);
+    }
+
+    if (tab && tab !== 'all') {
+      params.set('tab', tab);
+    }
+
+    // Only add genres if there are any selected
+    if (genres.length > 0) {
+      // For multiple genres, we'd need to set multiple values
+      genres.forEach(g => params.append('genres', g));
+    }
+
+    // Update the URL without triggering a full page reload
+    navigate(
+      {
+        pathname: '/search/manga',
+        search: params.toString(),
+      },
+      { replace: true },
+    );
   };
 
   const clearGenres = () => {
     setSelectedGenres([]);
+    // Update URL to remove genre parameters
+    updateUrlWithCurrentFilters(searchQuery, [], activeTab);
   };
 
   const clearSearch = () => {
+    // Clear all state
     setSearchQuery('');
     setSearchResults([]);
     setSelectedGenres([]);
+
+    // Also clear URL parameters by navigating to base search path
+    navigate('/search/manga');
   };
 
   const renderGenres = (genres: string[]) => {
