@@ -324,9 +324,6 @@ const Register: React.FC = () => {
                           <Select.Option value={UserRole.USER}>
                             User
                           </Select.Option>
-                          <Select.Option value={UserRole.ADMIN}>
-                            Admin
-                          </Select.Option>
                         </Select>
                       </Form.Item>
                     </Col>

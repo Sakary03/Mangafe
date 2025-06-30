@@ -119,7 +119,7 @@ const UploadedManga: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <Title level={2} className="mb-0">
-          {isOwner ? 'My Uploaded Manga' : 'User Uploaded Manga'}
+          {isOwner ? 'My Uploaded Manga' : 'Truyện người dùng đóng góp'}
         </Title>
 
         {isOwner && (
@@ -147,7 +147,7 @@ const UploadedManga: React.FC = () => {
           }
         >
           {isOwner && (
-            <Link to="/upload-manga">
+            <Link to="/upload">
               <Button type="primary" className="bg-blue-600 hover:bg-blue-700">
                 Upload Your First Manga
               </Button>

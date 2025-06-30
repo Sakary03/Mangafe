@@ -18,6 +18,7 @@ import {
   deleteManga,
   MangaItem,
 } from '../../../../libs/mangaServices';
+import { notificationServices } from '../../../../libs/notificationServices';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -33,6 +34,25 @@ export default function UserUploadManga() {
   const [searchTitle, setSearchTitle] = useState('');
 
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+
+  // Function to create status change notification
+  const createStatusChangeNotification = async (
+    userId: number,
+    mangaTitle: string,
+    oldStatus: string,
+    newStatus: string,
+  ) => {
+    try {
+      await notificationServices.statusChangeNotification(
+        userId,
+        mangaTitle,
+        oldStatus,
+        newStatus,
+      );
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  };
 
   const fetchData = async (page = 1, limit = 100) => {
     setLoading(true);
@@ -94,8 +114,35 @@ export default function UserUploadManga() {
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
+      // Find the manga to get owner info and current status
+      const currentManga = manga.find(m => m.id === id);
+      if (!currentManga) {
+        message.error('Manga not found');
+        return;
+      }
+
+      const oldStatus = currentManga.status || 'UNKNOWN';
+
+      // Don't send notification if status hasn't changed
+      if (oldStatus.toUpperCase() === status.toUpperCase()) {
+        message.info('Status is already set to this value');
+        return;
+      }
+
+      // Update the manga status
       await updateMangaStatus(id, status);
-      message.success(`Manga status updated to ${status}`);
+
+      // Create notification for the manga owner
+      if (currentManga.uploadedBy?.id) {
+        await createStatusChangeNotification(
+          currentManga.uploadedBy.id,
+          currentManga.title,
+          oldStatus,
+          status,
+        );
+      }
+
+      message.success(`Manga status updated to ${status} and user notified`);
       fetchData(pagination.current);
     } catch (error) {
       console.error('Error updating manga status:', error);
@@ -229,7 +276,7 @@ export default function UserUploadManga() {
 
   return (
     <div>
-      <Title level={2}>User Uploaded Manga</Title>
+      <Title level={2}>Truyện người dùng đóng góp</Title>
       <Card style={{ marginBottom: 16 }}>
         <Space wrap>
           <Input

@@ -77,7 +77,7 @@ export function MostViewCard({ manga, rank }: MostViewCardProps) {
       onClick={handleCardClick}
     >
       {/* Rank indicator */}
-      <div className="w-12 bg-blue-600 flex items-center justify-center">
+      <div className="w-12 flex items-center justify-center" style={{ backgroundColor: '#1F2937' }}>
         <span className="text-white font-bold text-2xl">{rank}</span>
       </div>
 

@@ -22,7 +22,6 @@ const UploadManga: React.FC = () => {
   );
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  // Clean up URLs on unmount
   useEffect(() => {
     return () => {
       if (posterPreview) {
@@ -37,7 +36,6 @@ const UploadManga: React.FC = () => {
   const handlePosterChange = (info: any) => {
     console.log('Poster change triggered:', info);
 
-    // Check if it's a removal action
     if (info.file.status === 'removed') {
       console.log('Removing poster file');
       setPosterFile(null);
@@ -48,7 +46,6 @@ const UploadManga: React.FC = () => {
       return;
     }
 
-    // Get file object (handle both originFileObj and raw File objects)
     const file = info.file.originFileObj || info.file;
 
     if (!file) {
@@ -120,7 +117,6 @@ const UploadManga: React.FC = () => {
     setLoading(true);
 
     try {
-      // Create payload object following the MangaRequestDTO interface
       const mangaPayload: mangaService.MangaRequestDTO = {
         title: values.title,
         author: values.author,
@@ -132,7 +128,6 @@ const UploadManga: React.FC = () => {
         userId: user.userID,
       };
 
-      // Use the service function instead of direct axios call
       await mangaService.createManga(mangaPayload);
 
       message.success('Manga uploaded successfully!');
@@ -149,7 +144,7 @@ const UploadManga: React.FC = () => {
         URL.revokeObjectURL(backgroundPreview);
         setBackgroundPreview(null);
       }
-      navigate(`/user/${user.userID}/uploaded`);
+      navigate(`/user/uploaded`);
     } catch (error: any) {
       message.error('Upload failed. Please try again.');
       console.error('Upload error:', error);

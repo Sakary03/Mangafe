@@ -162,14 +162,6 @@ const UserHeader = () => {
       ),
       key: 'register',
     },
-    {
-      label: (
-        <Link to="/downloads" className="py-1">
-          Truyện đã tải xuống
-        </Link>
-      ),
-      key: 'downloads',
-    },
   ];
 
   // Logged in user menu items
@@ -238,9 +230,11 @@ const UserHeader = () => {
           >
             HỘI KÍN
           </Link>
-          <Link to="/upload" className="px-3 py-2 hover:text-white">
-            ĐĂNG TRUYỆN
-          </Link>
+          {isLoggedIn && (
+            <Link to="/upload" className="px-3 py-2 hover:text-white">
+              ĐĂNG TRUYỆN
+            </Link>
+          )}
           <Link
             to="https://www.crunchyroll.com/news/manga?srsltid=AfmBOoriybvLcVPWQ6WhHOtPaunCGux_JK8HTLkvQGcrWRHaMNd85-4U"
             className="px-3 py-2 hover:text-white"

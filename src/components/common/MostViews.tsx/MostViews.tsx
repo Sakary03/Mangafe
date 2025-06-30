@@ -54,7 +54,7 @@ export default function MostViews() {
       <div className="w-full max-w-[80%] px-4 sm:px-6 lg:px-8 py-5">
         <div className="flex items-center mb-8">
           <h1 className="text-4xl font-bold text-white relative">
-            Most Popular Manga
+            Top phổ biến
             <div className="h-1 w-16 bg-white mt-2 rounded-full"></div>
           </h1>
         </div>
@@ -72,9 +72,9 @@ export default function MostViews() {
         )}
 
         <div className="flex justify-end">
-          <Link to="/">
+          <Link to="/search/manga">
             <button className="group inline-flex items-center px-6 py-3 text-lg font-medium text-blue-600 hover:text-blue-700 bg-white hover:bg-gray-50 rounded-full border border-blue-200 hover:border-blue-300 transition-all duration-200">
-              Show More
+              Xem thêm
               <RightOutlined className="ml-2 transition-transform duration-200 group-hover:translate-x-1" />
             </button>
           </Link>

@@ -216,7 +216,6 @@ const ChapterList: React.FC = () => {
             <Option value="chapterIndex">Sort by Chapter Number</Option>
             <Option value="createdAt">Sort by Created Date</Option>
             <Option value="updatedAt">Sort by Updated Date</Option>
-            <Option value="readTimes">Sort by Read Count</Option>
           </Select>
           <Button 
             type="primary" 

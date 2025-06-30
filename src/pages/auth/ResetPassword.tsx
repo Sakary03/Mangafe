@@ -54,7 +54,7 @@ const ResetPassword: React.FC = () => {
       const errorMessage =
         err instanceof Error
           ? err.message
-          : 'Failed to reset password. The token may be invalid or expired.';
+          : 'Không thể đặt lại mật khẩu. Mã token có thể không hợp lệ hoặc đã hết hạn.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -66,7 +66,7 @@ const ResetPassword: React.FC = () => {
       <div className="w-full max-w-md px-8 py-10 bg-white rounded-2xl shadow-xl">
         <div className="text-center mb-8">
           <Title level={2} className="text-gray-800 font-bold">
-            Reset Password
+            Đổi mật khẩu
           </Title>
           <Text className="text-gray-500">
             Create a new password for your account
@@ -121,20 +121,7 @@ const ResetPassword: React.FC = () => {
             requiredMark={false}
             size="large"
           >
-            <Form.Item
-              label="New Password"
-              name="password"
-              rules={[
-                { required: true, message: 'Please enter your new password' },
-                { min: 6, message: 'Password must be at least 6 characters' },
-                {
-                  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/,
-                  message:
-                    'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-                },
-              ]}
-              hasFeedback
-            >
+            <Form.Item label="New Password" name="password" hasFeedback>
               <Input.Password
                 prefix={<LockOutlined className="text-gray-400" />}
                 placeholder="Enter your new password"
@@ -175,7 +162,7 @@ const ResetPassword: React.FC = () => {
                 className="w-full rounded-lg bg-blue-500 hover:bg-blue-600"
                 loading={isLoading}
               >
-                Reset Password
+                Đổi mật khẩu
               </Button>
             </Form.Item>
 

@@ -7,8 +7,10 @@ import {
   EyeOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import api from '../../libs/api';
 import DashboardLayout from './DashboardLayout';
+import * as mangaService from '../../libs/mangaServices';
+import * as userService from '../../libs/userService';
+import * as chapterService from '../../libs/chapterServices';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,77 +20,45 @@ const Dashboard = () => {
     totalUsers: 0,
     totalChapters: 0,
   });
-  const [recentMangas, setRecentMangas] = useState<
-    {
-      id: number;
-      title: string;
-      status: string;
-      chapterCount: number;
-      createdAt: string;
-    }[]
-  >([]);
+  const [recentMangas, setRecentMangas] = useState<mangaService.MangaItem[]>(
+    [],
+  );
 
   useEffect(() => {
-    // In a real app, fetch actual data from your backend
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Simulate API calls - replace with real API calls
-        // const mangaResponse = await api.get('/manga/?offset=0&limit=5');
-        // const usersResponse = await api.get('/users/?offset=0&limit=10');
-        // const chaptersResponse = await api.get('/chapters/stats');
+        const [allMangas, allUsers, allChapters] = await Promise.all([
+          mangaService.getAllManga(0, 10000, 'createdAt', false),
+          userService.getAllUsersForStats(),
+          chapterService.getAllChaptersForStats(), 
+        ]);
 
-        // Mock data for demonstration
-        setTimeout(() => {
-          setStats({
-            totalMangas: 12,
-            totalUsers: 4,
-            totalChapters: 2,
-          });
+        const totalMangas = Array.isArray(allMangas) ? allMangas.length : 0;
+        const totalUsers = Array.isArray(allUsers) ? allUsers.length : 0;
+        const totalChapters = allChapters?.data?.length || 0;
 
-          setRecentMangas([
-            {
-              id: 1,
-              title: 'One Piece',
-              status: 'active',
-              chapterCount: 1089,
-              createdAt: '2023-06-15',
-            },
-            {
-              id: 2,
-              title: 'Naruto',
-              status: 'completed',
-              chapterCount: 700,
-              createdAt: '2023-06-14',
-            },
-            {
-              id: 3,
-              title: 'Bleach',
-              status: 'active',
-              chapterCount: 366,
-              createdAt: '2023-06-13',
-            },
-            {
-              id: 4,
-              title: 'My Hero Academia',
-              status: 'active',
-              chapterCount: 392,
-              createdAt: '2023-06-12',
-            },
-            {
-              id: 5,
-              title: 'Dragon Ball',
-              status: 'completed',
-              chapterCount: 519,
-              createdAt: '2023-06-11',
-            },
-          ]);
+        setStats({
+          totalMangas,
+          totalUsers,
+          totalChapters,
+        });
 
-          setLoading(false);
-        }, 1000);
+        const recentMangasData = Array.isArray(allMangas)
+          ? allMangas.slice(0, 10)
+          : [];
+
+        setRecentMangas(recentMangasData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setStats({
+          totalMangas: 0,
+          totalUsers: 0,
+          totalChapters: 0,
+        });
+        setRecentMangas([]);
+      } finally {
         setLoading(false);
       }
     };
@@ -98,41 +68,74 @@ const Dashboard = () => {
 
   const columns = [
     {
-      title: 'Title',
+      title: 'Tiêu đề',
       dataIndex: 'title',
       key: 'title',
     },
     {
-      title: 'Status',
+      title: 'Tác giả',
+      dataIndex: 'author',
+      key: 'author',
+    },
+    {
+      title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: status => (
-        <Tag color={status === 'active' ? 'green' : 'blue'}>
-          {status === 'active' ? 'Active' : 'Completed'}
-        </Tag>
-      ),
+      render: (status: string) => {
+        const getStatusColor = (status: string) => {
+          switch (status?.toUpperCase()) {
+            case 'APPROVED':
+              return 'green';
+            case 'PENDING':
+              return 'orange';
+            case 'REJECTED':
+              return 'red';
+            default:
+              return 'blue';
+          }
+        };
+
+        const getStatusText = (status: string) => {
+          switch (status?.toUpperCase()) { 
+            case 'APPROVED':
+              return 'APPROVED';
+            case 'PENDING':
+              return 'PENDING';
+            case 'REJECTED':
+              return 'REJECTED';
+            case 'HIDDEN':
+              return 'HIDDEN';
+            case 'DELETED':
+              return 'DELETED';
+            case 'UPDATE':
+              return 'UPDATE';
+            default:
+              return 'UNKNOWN';
+          }
+        };
+
+        return (
+          <Tag color={getStatusColor(status)}>{getStatusText(status)}</Tag>
+        );
+      },
     },
     {
-      title: 'Chapters',
-      dataIndex: 'chapterCount',
-      key: 'chapterCount',
-    },
-    {
-      title: 'Created At',
+      title: 'Ngày tạo',
       dataIndex: 'createdAt',
       key: 'createdAt',
+      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
     },
     {
-      title: 'Actions',
+      title: 'Thao tác',
       key: 'actions',
-      render: (_, record) => (
+      render: (_: unknown, record: mangaService.MangaItem) => (
         <Button
           type="primary"
           icon={<EyeOutlined />}
           size="small"
-          onClick={() => navigate(`/admin/manga/${record.id}`)}
+          onClick={() => navigate(`/manga/${record.id}`)}
         >
-          View
+          Xem
         </Button>
       ),
     },
@@ -148,7 +151,7 @@ const Dashboard = () => {
           <Col xs={24} sm={8}>
             <Card loading={loading}>
               <Statistic
-                title="Total Manga"
+                title="Tổng số truyện"
                 value={stats.totalMangas}
                 prefix={<BookOutlined />}
                 valueStyle={{ color: '#3f8600' }}
@@ -158,7 +161,7 @@ const Dashboard = () => {
           <Col xs={24} sm={8}>
             <Card loading={loading}>
               <Statistic
-                title="Total Users"
+                title="Tổng số người dùng"
                 value={stats.totalUsers}
                 prefix={<UserOutlined />}
                 valueStyle={{ color: '#1890ff' }}
@@ -168,7 +171,7 @@ const Dashboard = () => {
           <Col xs={24} sm={8}>
             <Card loading={loading}>
               <Statistic
-                title="Total Chapters"
+                title="Tổng số chương"
                 value={stats.totalChapters}
                 prefix={<FileOutlined />}
                 valueStyle={{ color: '#722ed1' }}
@@ -179,10 +182,10 @@ const Dashboard = () => {
 
         {/* Recent Manga Table */}
         <Card
-          title="Recent Manga"
+          title="Truyện mới nhất"
           extra={
             <Button type="link" onClick={() => navigate('/admin/manga')}>
-              View All
+              Xem tất cả
             </Button>
           }
           className="mb-6"

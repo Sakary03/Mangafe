@@ -26,9 +26,9 @@ const SearchManga: React.FC = () => {
   const [searchResults, setSearchResults] = useState<mangaService.MangaItem[]>(
     [],
   );
-  const [activeTab, setActiveTab] = useState<
-    'all' | 'titles' | 'users' | 'authors'
-  >('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'titles' | 'authors'>(
+    'all',
+  );
   const [loading, setLoading] = useState(false);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [genreDropdownVisible, setGenreDropdownVisible] = useState(false);
@@ -38,7 +38,6 @@ const SearchManga: React.FC = () => {
 
   const allGenres = Object.values(MangaGenres);
 
-  // Define performSearch with useCallback before using it in useEffect
   const performSearch = useCallback(
     async (query: string) => {
       // if (!query.trim() && selectedGenres.length === 0) {
@@ -57,14 +56,6 @@ const SearchManga: React.FC = () => {
           case 'authors':
             searchDto.author = query;
             break;
-          case 'users': {
-            // Parse query as a number if it's a user ID
-            const userId = parseInt(query, 10);
-            if (!isNaN(userId)) {
-              searchDto.uploadedBy = userId;
-            }
-            break;
-          }
           default:
             searchDto.title = query;
             searchDto.author = query;
@@ -76,7 +67,6 @@ const SearchManga: React.FC = () => {
         const results = await mangaService.searchManga(searchDto, 0, 20);
         setSearchResults(results);
 
-        // Fetch chapter counts for the manga in the results
         fetchChapterCounts(results);
       } catch (error) {
         console.error('Error searching manga:', error);
@@ -89,40 +79,31 @@ const SearchManga: React.FC = () => {
   );
 
   useEffect(() => {
-    // Handle URL query parameters
     const queryParams = new URLSearchParams(location.search);
     const q = queryParams.get('q') || '';
     const genreParam = queryParams.get('genres');
     const tabParam = queryParams.get('tab') as
       | 'all'
       | 'titles'
-      | 'users'
       | 'authors'
       | null;
 
-    // Update state based on URL parameters
     setSearchQuery(q);
 
-    // Set tab if present in URL
     if (tabParam) {
       setActiveTab(tabParam);
     }
 
-    // Handle genre parameter - add to selected genres if not already included
     if (genreParam && !selectedGenres.includes(genreParam)) {
       setSelectedGenres(prev => [...prev, genreParam]);
     }
 
-    // Perform initial search based on URL parameters
-    // Small delay to ensure state updates before search
     const timer = setTimeout(() => {
       performSearch(q);
     }, 100);
 
     return () => clearTimeout(timer);
   }, [location.search, performSearch, selectedGenres]);
-
-  // Remove the initialFilters useEffect as we're now using URL params
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -132,7 +113,6 @@ const SearchManga: React.FC = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, activeTab, selectedGenres, performSearch]);
 
-  // Function to fetch chapter counts for all manga in the search results
   const fetchChapterCounts = async (mangaResults: mangaService.MangaItem[]) => {
     const newChapterCounts: Record<number, number> = {};
 
@@ -150,15 +130,13 @@ const SearchManga: React.FC = () => {
       }
     });
 
-    // Wait for all requests to complete
     await Promise.all(promises);
 
-    // Update state with the chapter counts
     setChapterCounts(newChapterCounts);
   };
 
   const handleTabChange = (key: string) => {
-    setActiveTab(key as 'all' | 'titles' | 'users' | 'authors');
+    setActiveTab(key as 'all' | 'titles' | 'authors');
   };
 
   const toggleGenre = (genre: string) => {
@@ -170,14 +148,12 @@ const SearchManga: React.FC = () => {
         newGenres = [...prev, genre];
       }
 
-      // Update URL params to reflect the current selected genres
       updateUrlWithCurrentFilters(searchQuery, newGenres, activeTab);
 
       return newGenres;
     });
   };
 
-  // Helper function to update URL without triggering navigation
   const updateUrlWithCurrentFilters = (
     query: string,
     genres: string[],
@@ -193,13 +169,10 @@ const SearchManga: React.FC = () => {
       params.set('tab', tab);
     }
 
-    // Only add genres if there are any selected
     if (genres.length > 0) {
-      // For multiple genres, we'd need to set multiple values
       genres.forEach(g => params.append('genres', g));
     }
 
-    // Update the URL without triggering a full page reload
     navigate(
       {
         pathname: '/search/manga',
@@ -211,17 +184,14 @@ const SearchManga: React.FC = () => {
 
   const clearGenres = () => {
     setSelectedGenres([]);
-    // Update URL to remove genre parameters
     updateUrlWithCurrentFilters(searchQuery, [], activeTab);
   };
 
   const clearSearch = () => {
-    // Clear all state
     setSearchQuery('');
     setSearchResults([]);
     setSelectedGenres([]);
 
-    // Also clear URL parameters by navigating to base search path
     navigate('/search/manga');
   };
 
@@ -309,7 +279,6 @@ const SearchManga: React.FC = () => {
           items={[
             { label: 'All', key: 'all' },
             { label: 'Titles', key: 'titles' },
-            { label: 'Users', key: 'users' },
             { label: 'Authors', key: 'authors' },
           ]}
         />
@@ -360,7 +329,6 @@ const SearchManga: React.FC = () => {
         </Dropdown>
       </div>
 
-      {/* Display selected genres */}
       {selectedGenres.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {selectedGenres.map(genre => (
@@ -401,7 +369,6 @@ const SearchManga: React.FC = () => {
                           {manga.title}
                         </h3>
                         <div className="flex items-center ml-2 flex-shrink-0">
-                          {/* Displaying creation date instead of rating */}
                           <span className="text-xs text-gray-500">
                             {new Date(manga.createdAt).toLocaleDateString()}
                           </span>

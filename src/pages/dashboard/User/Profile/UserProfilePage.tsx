@@ -151,19 +151,14 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-  // Function to fetch user's uploaded manga
   const fetchUploadedManga = async (userId: number) => {
     try {
       setUploadLoading(true);
-      // Set offset to 0 and limit to 5 for just showing a preview of uploaded manga
       const response = await searchManga({ uploadedBy: userId }, 0, 5);
-      // Check if response contains data and set it to state
       if (response) {
         if (Array.isArray(response)) {
-          // If response is an array
           setUploadedManga(response);
         } else if (response.content) {
-          // If response is paginated with content property
           setUploadedManga(response.content);
         }
       }
@@ -185,9 +180,9 @@ const UserProfilePage: React.FC = () => {
   if (!user) {
     return (
       <div className="max-w-5xl mx-auto p-6 text-center">
-        <Title level={3}>Unable to load profile</Title>
+        <Title level={3}>Không thể tải hồ sơ người dùng</Title>
         <Button type="primary" onClick={() => window.location.reload()}>
-          Retry
+          Thử lại
         </Button>
       </div>
     );
@@ -241,14 +236,14 @@ const UserProfilePage: React.FC = () => {
                   type="default"
                   onClick={() => setResetPasswordVisible(true)}
                 >
-                  Reset Password
+                  Đổi mật khẩu
                 </Button>
                 <Button icon={<SettingOutlined />} type="default">
-                  Settings
+                  Cài đặt
                 </Button>
                 <Link to="/auth/login">
                   <Button icon={<LogoutOutlined />} type="text" danger>
-                    Logout
+                    Đăng xuất
                   </Button>
                 </Link>
               </Space>
@@ -307,7 +302,7 @@ const UserProfilePage: React.FC = () => {
                                   uploadError,
                                 );
                                 message.error(
-                                  'Failed to upload profile image. Please try again.',
+                                  'Không thể tải lên ảnh đại diện. Vui lòng thử lại.',
                                 );
                                 throw uploadError;
                               }
@@ -339,7 +334,7 @@ const UserProfilePage: React.FC = () => {
                                 });
                               }
 
-                              message.success('Profile updated successfully!');
+                              message.success('Cập nhật hồ sơ thành công!');
                               setEditing(false);
                             } else {
                               throw new Error('User not found');
@@ -347,7 +342,7 @@ const UserProfilePage: React.FC = () => {
                           } catch (error) {
                             console.error('Error updating profile:', error);
                             message.error(
-                              'Failed to update profile. Please try again.',
+                              'Không thể cập nhật hồ sơ. Vui lòng thử lại.',
                             );
                           } finally {
                             setLoading(false);
@@ -358,29 +353,29 @@ const UserProfilePage: React.FC = () => {
                         });
                     }}
                   >
-                    Save Changes
+                    Lưu thay đổi
                   </Button>
                 ) : (
                   <Button
                     icon={<EditOutlined />}
                     onClick={() => setEditing(true)}
                   >
-                    Edit Profile
+                    Chỉnh sửa hồ sơ
                   </Button>
                 )
               }
             >
               <Title level={4} className="mb-6">
-                Profile Information
+                Thông tin cá nhân
               </Title>
               {editing ? (
                 <Form form={editForm} layout="vertical">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Form.Item
                       name="username"
-                      label="Username"
+                      label="Tên người dùng"
                       rules={[
-                        { required: true, message: 'Username is required' },
+                        { required: true, message: 'Vui lòng nhập tên người dùng' },
                       ]}
                     >
                       <Input
@@ -392,10 +387,10 @@ const UserProfilePage: React.FC = () => {
                       name="email"
                       label="Email"
                       rules={[
-                        { required: true, message: 'Email is required' },
+                        { required: true, message: 'Vui lòng nhập email' },
                         {
                           type: 'email',
-                          message: 'Please enter a valid email',
+                          message: 'Vui lòng nhập email hợp lệ',
                         },
                       ]}
                     >
@@ -406,9 +401,9 @@ const UserProfilePage: React.FC = () => {
 
                     <Form.Item
                       name="name"
-                      label="Full Name"
+                      label="Họ tên"
                       rules={[
-                        { required: true, message: 'Full name is required' },
+                        { required: true, message: 'Vui lòng nhập họ tên' },
                       ]}
                     >
                       <Input
@@ -416,13 +411,13 @@ const UserProfilePage: React.FC = () => {
                       />
                     </Form.Item>
 
-                    <Form.Item name="date" label="Date of Birth">
+                    <Form.Item name="date" label="Ngày sinh">
                       <DatePicker className="w-full" />
                     </Form.Item>
 
                     <Form.Item
                       name="address"
-                      label="Address"
+                      label="Địa chỉ"
                       className="md:col-span-2"
                     >
                       <Input
@@ -432,7 +427,7 @@ const UserProfilePage: React.FC = () => {
 
                     <Form.Item
                       name="avatar"
-                      label="Profile Picture"
+                      label="Ảnh đại diện"
                       className="md:col-span-2"
                     >
                       <Upload
@@ -457,7 +452,7 @@ const UserProfilePage: React.FC = () => {
                         ) : (
                           <div>
                             <PlusOutlined />
-                            <div style={{ marginTop: 8 }}>Upload</div>
+                            <div style={{ marginTop: 8 }}>Tải lên</div>
                           </div>
                         )}
                       </Upload>
@@ -472,7 +467,7 @@ const UserProfilePage: React.FC = () => {
                         <UserOutlined className="text-blue-600 text-lg" />
                       </div>
                       <div>
-                        <Text className="text-gray-500 text-sm">Username</Text>
+                        <Text className="text-gray-500 text-sm">Tên người dùng</Text>
                         <div className="text-gray-900 font-medium">
                           {user.username}
                         </div>
@@ -496,7 +491,7 @@ const UserProfilePage: React.FC = () => {
                         <UserOutlined className="text-purple-600 text-lg" />
                       </div>
                       <div>
-                        <Text className="text-gray-500 text-sm">Full Name</Text>
+                        <Text className="text-gray-500 text-sm">Họ tên</Text>
                         <div className="text-gray-900 font-medium">
                           {user.name}
                         </div>
@@ -509,7 +504,7 @@ const UserProfilePage: React.FC = () => {
                       </div>
                       <div>
                         <Text className="text-gray-500 text-sm">
-                          Date of Birth
+                          Ngày sinh
                         </Text>
                         <div className="text-gray-900 font-medium">
                           {dayjs(user.date).format('MMMM D, YYYY')}
@@ -522,9 +517,9 @@ const UserProfilePage: React.FC = () => {
                         <HomeOutlined className="text-red-600 text-lg" />
                       </div>
                       <div>
-                        <Text className="text-gray-500 text-sm">Address</Text>
+                        <Text className="text-gray-500 text-sm">Địa chỉ</Text>
                         <div className="text-gray-900 font-medium">
-                          {'HaNoi'}
+                          {'Hà Nội'}
                         </div>
                       </div>
                     </div>
@@ -537,26 +532,26 @@ const UserProfilePage: React.FC = () => {
           <Col xs={24} lg={8}>
             <Card className="shadow-sm mb-6">
               <Title level={4} className="mb-4">
-                Account Details
+                Thông tin tài khoản
               </Title>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <Text className="text-gray-600">Account Status</Text>
-                  <Tag color="green">Active</Tag>
+                  <Text className="text-gray-600">Trạng thái</Text>
+                  <Tag color="green">Đang hoạt động</Tag>
                 </div>
                 <Divider className="my-2" />
                 <div className="flex justify-between items-center">
-                  <Text className="text-gray-600">Member Since</Text>
+                  <Text className="text-gray-600">Thành viên từ</Text>
                   <Text>{dayjs(user.createdAt).format('MMM YYYY')}</Text>
                 </div>
                 <Divider className="my-2" />
                 <div className="flex justify-between items-center">
-                  <Text className="text-gray-600">Last Login</Text>
-                  <Text>{dayjs().format('MMM D, YYYY')}</Text>
+                  <Text className="text-gray-600">Đăng nhập gần đây</Text>
+                  <Text>{dayjs().format('DD/MM/YYYY')}</Text>
                 </div>
                 <Divider className="my-2" />
                 <div className="flex justify-between items-center">
-                  <Text className="text-gray-600">Account Type</Text>
+                  <Text className="text-gray-600">Loại tài khoản</Text>
                   <Tag color={user.role === 'ADMIN' ? 'red' : 'blue'}>
                     {user.role}
                   </Tag>
@@ -570,11 +565,11 @@ const UserProfilePage: React.FC = () => {
               title={
                 <div className="flex justify-between items-center">
                   <Title level={4} className="mb-0">
-                    Manga Following
+                    Truyện đang theo dõi
                   </Title>
 
                   <Link to="/user/following">
-                    <Button type="link">View All</Button>
+                    <Button type="link">Xem tất cả</Button>
                   </Link>
                 </div>
               }
@@ -583,11 +578,11 @@ const UserProfilePage: React.FC = () => {
               {followedManga.length === 0 ? (
                 <div className="text-center py-6">
                   <p className="text-gray-500">
-                    You haven't followed any manga yet
+                    Bạn chưa theo dõi truyện nào
                   </p>
                   <Link to="/manga">
                     <Button type="primary" className="mt-4">
-                      Browse Manga
+                      Khám phá truyện
                     </Button>
                   </Link>
                 </div>
@@ -610,7 +605,7 @@ const UserProfilePage: React.FC = () => {
                           onError={e => {
                             const target = e.target as HTMLImageElement;
                             target.src =
-                              'https://placehold.co/60x80/e2e8f0/1e293b?text=Error';
+                              'https://placehold.co/60x80/e2e8f0/1e293b?text=Lỗi';
                           }}
                         />
                         <div className="overflow-hidden">
@@ -620,8 +615,8 @@ const UserProfilePage: React.FC = () => {
                           <div className="text-xs text-gray-500 mt-1">
                             {manga.genres?.length > 0
                               ? manga.genres[0]
-                              : 'No genre'}{' '}
-                            • {manga.readTimes || 0} reads
+                              : 'Không có thể loại'}{' '}
+                            • {manga.readTimes || 0} lượt đọc
                           </div>
                         </div>
                       </div>
@@ -641,15 +636,15 @@ const UserProfilePage: React.FC = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <Title level={3} className="mb-0">
-                    My Manga Uploads
+                    Truyện đã đăng tải
                   </Title>
                   <Text type="secondary">
-                    Manage and track your manga uploads
+                    Quản lý và theo dõi truyện bạn đã đăng tải
                   </Text>
                 </div>
-                <Link to={`/user/${getCurrentUser()?.userID}/uploaded`}>
+                <Link to={`/upload`}>
                   <Button type="primary" icon={<PlusOutlined />}>
-                    Upload New
+                    Đăng tải mới
                   </Button>
                 </Link>
               </div>
@@ -661,13 +656,13 @@ const UserProfilePage: React.FC = () => {
                 <div className="mb-4 text-gray-400">
                   <FileImageOutlined style={{ fontSize: '48px' }} />
                 </div>
-                <Title level={5}>You haven't uploaded any manga yet</Title>
+                <Title level={5}>Bạn chưa đăng tải truyện nào</Title>
                 <p className="text-gray-500 mb-6">
-                  Start sharing your favorite manga with the community
+                  Bắt đầu chia sẻ truyện yêu thích của bạn với cộng đồng
                 </p>
-                <Link to="/manga/upload">
+                <Link to="/upload">
                   <Button type="primary" size="large">
-                    Upload Your First Manga
+                    Đăng tải truyện đầu tiên
                   </Button>
                 </Link>
               </div>
@@ -740,38 +735,36 @@ const UserProfilePage: React.FC = () => {
                               +{manga.genres.length - 3}
                             </Tag>
                           )}
-                        </div>
+                        </div>                          <div className="mt-3 flex justify-between items-center">
+                            <div className="text-xs text-gray-500 flex items-center">
+                              <span>
+                                Đã tạo{' '}
+                                {dayjs(manga.createdAt).format('DD/MM/YYYY')}
+                              </span>
+                              <div className="w-1 h-1 bg-gray-400 rounded-full mx-2"></div>
+                              <span>{manga.readTimes} lượt đọc</span>
+                            </div>
 
-                        <div className="mt-3 flex justify-between items-center">
-                          <div className="text-xs text-gray-500 flex items-center">
-                            <span>
-                              Created{' '}
-                              {dayjs(manga.createdAt).format('MMM D, YYYY')}
-                            </span>
-                            <div className="w-1 h-1 bg-gray-400 rounded-full mx-2"></div>
-                            <span>{manga.readTimes} reads</span>
-                          </div>
-
-                          <Space>
-                            <Link to={`/manga/edit/${manga.id}`}>
+                            <Space>
+                              <Link to={`/manga/edit/${manga.id}`}>
+                                <Button
+                                  type="text"
+                                  icon={<EditOutlined />}
+                                  size="small"
+                                >
+                                  Sửa
+                                </Button>
+                              </Link>
                               <Button
                                 type="text"
-                                icon={<EditOutlined />}
+                                danger
+                                icon={<DeleteOutlined />}
                                 size="small"
                               >
-                                Edit
+                                Xóa
                               </Button>
-                            </Link>
-                            <Button
-                              type="text"
-                              danger
-                              icon={<DeleteOutlined />}
-                              size="small"
-                            >
-                              Delete
-                            </Button>
-                          </Space>
-                        </div>
+                            </Space>
+                          </div>
                       </div>
                     </div>
                   </div>
@@ -781,7 +774,7 @@ const UserProfilePage: React.FC = () => {
                   <div className="text-center pt-4">
                     <Link to={`/user/${getCurrentUser()?.userID}/uploaded`}>
                       <Button type="link">
-                        View All Uploads ({uploadedManga.length})
+                        Xem tất cả ({uploadedManga.length})
                       </Button>
                     </Link>
                   </div>
@@ -794,7 +787,7 @@ const UserProfilePage: React.FC = () => {
 
       {/* Reset Password Modal */}
       <Modal
-        title="Reset Password"
+        title="Đổi mật khẩu"
         open={resetPasswordVisible}
         onCancel={() => setResetPasswordVisible(false)}
         footer={null}
@@ -822,7 +815,7 @@ const UserProfilePage: React.FC = () => {
               // Check response
               if (response === true) {
                 message.success(
-                  'Password changed successfully. You will be logged out.',
+                  'Đổi mật khẩu thành công. Bạn sẽ được đăng xuất.',
                 );
 
                 // Wait a moment to show the success message, then log out
@@ -836,13 +829,13 @@ const UserProfilePage: React.FC = () => {
                 }, 1500);
               } else {
                 message.error(
-                  'Failed to change password. Please check your current password and try again.',
+                  'Không thể thay đổi mật khẩu. Vui lòng kiểm tra mật khẩu hiện tại và thử lại.',
                 );
               }
             } catch (error) {
               console.error('Error changing password:', error);
               message.error(
-                'Failed to change password. Please try again later.',
+                'Không thể thay đổi mật khẩu. Vui lòng thử lại sau.',
               );
             } finally {
               setLoading(false);
@@ -850,44 +843,35 @@ const UserProfilePage: React.FC = () => {
           }}
         >
           <Form.Item
-            label="Current Password"
+            label="Mật khẩu hiện tại"
             name="currentPassword"
             rules={[
-              { required: true, message: 'Please enter your current password' },
+              { required: true, message: 'Vui lòng nhập mật khẩu hiện tại' },
             ]}
           >
             <Input.Password />
           </Form.Item>
-          <Form.Item
-            label="New Password"
+          <Form.Item 
+            label="Mật khẩu mới" 
             name="newPassword"
             rules={[
-              { required: true, message: 'Please enter your new password' },
-              {
-                min: 8,
-                message: 'Password must be at least 8 characters long',
-              },
-              {
-                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]+$/,
-                message:
-                  'Password must include uppercase, lowercase, and number',
-              },
+              { required: true, message: 'Vui lòng nhập mật khẩu mới' },
             ]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
-            label="Confirm New Password"
+            label="Xác nhận mật khẩu mới"
             name="confirmPassword"
             rules={[
-              { required: true, message: 'Please confirm your new password' },
+              { required: true, message: 'Vui lòng xác nhận mật khẩu mới' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('newPassword') === value) {
                     return Promise.resolve();
                   }
                   return Promise.reject(
-                    new Error('The two passwords do not match'),
+                    new Error('Hai mật khẩu không khớp'),
                   );
                 },
               }),
@@ -898,10 +882,10 @@ const UserProfilePage: React.FC = () => {
           <Form.Item className="flex justify-end">
             <Space>
               <Button onClick={() => setResetPasswordVisible(false)}>
-                Cancel
+                Hủy
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Reset Password
+                Đổi mật khẩu
               </Button>
             </Space>
           </Form.Item>

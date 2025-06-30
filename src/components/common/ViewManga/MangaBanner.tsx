@@ -1,10 +1,12 @@
 // 📁 src/components/MangaDetail/MangaBanner.tsx
 import React, { useEffect, useState } from 'react';
 import { PlayCircleOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Flex } from 'antd';
 import followService from '../../../libs/followService';
 import * as userService from '../../../libs/userService';
+import * as historyService from '../../../libs/historyService';
+import * as chapterService from '../../../libs/chapterServices';
 interface MangaBannerProps {
   id: number;
   title: string;
@@ -24,6 +26,7 @@ const MangaBanner: React.FC<MangaBannerProps> = ({
   numberOfChapters,
   isLoggedIn,
 }) => {
+  const navigate = useNavigate();
   const [userId, setUserId] = useState<number>(-1);
   const [isFollowing, setIsFollowing] = useState<boolean | undefined>(
     undefined,
@@ -37,6 +40,27 @@ const MangaBanner: React.FC<MangaBannerProps> = ({
     fetchUserId();
   }, []);
 
+  const handleReadFromChapter1 = async () => {
+    if (isLoggedIn && userId !== -1) {
+      try {
+        // Get all chapters for this manga to find chapter 1
+        const chapters = await chapterService.getAllChapter(id);
+
+        if (chapters.length > 0) {
+          const firstChapter =
+            chapters.find(chapter => chapter.chapterIndex === 1) || chapters[0];
+
+          await historyService.recordChapterRead(userId, id, firstChapter.id);
+        }
+      } catch (error) {
+        console.error('Error recording reading history:', error);
+      }
+    }
+
+    // Navigate to chapter 1
+    navigate(`/manga/${id}/chapter/1`);
+  };
+
   const handleFollowManga = async () => {
     if (!isLoggedIn) {
       return;
@@ -44,21 +68,23 @@ const MangaBanner: React.FC<MangaBannerProps> = ({
     if (!isFollowing) {
       await followService.userFollowNewManga(userId, id);
       await setIsFollowing(true);
-      window.location.reload()
+      window.location.reload();
     } else {
       await followService.unfollowManga(userId, id);
       await setIsFollowing(false);
-      window.location.reload()
+      window.location.reload();
     }
     return true;
   };
   useEffect(() => {
     const fetchIsFollowing = async () => {
-      const result = await followService.isFollowingManga(userId, id);
-      setIsFollowing(result);
+      if (userId !== -1) {
+        const result = await followService.isFollowingManga(userId, id);
+        setIsFollowing(result);
+      }
     };
     fetchIsFollowing();
-  }, [isFollowing]);
+  }, [userId, id]);
   return (
     <div
       className="relative w-full h-[500px] bg-cover bg-center"
@@ -113,16 +139,15 @@ const MangaBanner: React.FC<MangaBannerProps> = ({
               )}
               <div className="w-5"></div>
               {numberOfChapters >= 1 ? (
-                <Link to={`/manga/${id}/chapter/1`}>
-                  <Button
-                    type="primary"
-                    icon={<PlayCircleOutlined />}
-                    className="flex items-center bg-purple-600 hover:bg-purple-700 text-white font-semibold"
-                    size="large"
-                  >
-                    ĐỌC TỪ CHƯƠNG 1
-                  </Button>
-                </Link>
+                <Button
+                  type="primary"
+                  icon={<PlayCircleOutlined />}
+                  className="flex items-center bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                  size="large"
+                  onClick={handleReadFromChapter1}
+                >
+                  ĐỌC TỪ CHƯƠNG 1
+                </Button>
               ) : (
                 <Button
                   type="primary"

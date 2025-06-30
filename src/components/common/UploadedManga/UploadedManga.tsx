@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Typography,
@@ -39,7 +39,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import './uploadedManga.css';
 
-// Initialize dayjs plugins
 dayjs.extend(relativeTime);
 
 const { Title, Paragraph } = Typography;
@@ -53,8 +52,8 @@ const UploadedManga: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [total, setTotal] = useState<number>(0);
+  const [chapterCounts, setChapterCounts] = useState<Record<number, number>>({});
 
-  // Edit manga modal states
   const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false);
   const [editingManga, setEditingManga] = useState<MangaItem | null>(null);
   const [editForm] = Form.useForm();
@@ -64,7 +63,6 @@ const UploadedManga: React.FC = () => {
   const [backgroundPreview, setBackgroundPreview] = useState<string>('');
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
 
-  // Chapter upload modal states
   const [isChapterModalVisible, setIsChapterModalVisible] =
     useState<boolean>(false);
   const [selectedMangaForChapter, setSelectedMangaForChapter] =
@@ -74,11 +72,28 @@ const UploadedManga: React.FC = () => {
   const [chapterFilePreviews, setChapterFilePreviews] = useState<string[]>([]);
   const [uploadingChapter, setUploadingChapter] = useState<boolean>(false);
 
-  useEffect(() => {
-    fetchUploadedManga(currentPage, pageSize);
-  }, [currentPage, pageSize]);
+  const fetchChapterCounts = async (mangaData: MangaItem[]) => {
+    const counts: Record<number, number> = {};
+    
+    try {
+      const chapterPromises = mangaData.map(async (manga) => {
+        try {
+          const chapters = await chapterService.getAllChapter(manga.id);
+          counts[manga.id] = chapters.length;
+        } catch (error) {
+          console.error(`Error fetching chapters for manga ${manga.id}:`, error);
+          counts[manga.id] = 0;
+        }
+      });
 
-  const fetchUploadedManga = async (page: number, size: number) => {
+      await Promise.all(chapterPromises);
+      setChapterCounts(counts);
+    } catch (error) {
+      console.error('Error fetching chapter counts:', error);
+    }
+  };
+
+  const fetchUploadedManga = useCallback(async (page: number, size: number) => {
     try {
       setLoading(true);
       setError(null);
@@ -99,16 +114,23 @@ const UploadedManga: React.FC = () => {
       );
 
       if (response) {
-        // Handle different response formats
+        let mangaData: MangaItem[] = [];
+        
         if (Array.isArray(response)) {
-          setMangaList(response);
+          mangaData = response;
           setTotal(response.length);
         } else if (response.content && Array.isArray(response.content)) {
-          setMangaList(response.content);
+          mangaData = response.content;
           setTotal(response.totalElements || response.content.length);
         } else {
-          setMangaList([]);
+          mangaData = [];
           setTotal(0);
+        }
+
+        setMangaList(mangaData);
+        
+        if (mangaData.length > 0) {
+          await fetchChapterCounts(mangaData);
         }
       } else {
         setMangaList([]);
@@ -121,14 +143,17 @@ const UploadedManga: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUploadedManga(currentPage, pageSize);
+  }, [currentPage, pageSize, fetchUploadedManga]);
 
   const handleDelete = async (mangaId: number) => {
     try {
       if (window.confirm('Are you sure you want to delete this manga?')) {
         await mangaService.deleteManga(mangaId);
         message.success('Manga deleted successfully');
-        // Refresh the list
         fetchUploadedManga(currentPage, pageSize);
       }
     } catch (error) {
@@ -137,13 +162,11 @@ const UploadedManga: React.FC = () => {
     }
   };
 
-  // Function to handle opening edit modal
   const handleEdit = async (mangaId: number) => {
     try {
       const manga = await mangaService.getMangaById(mangaId);
       setEditingManga(manga);
 
-      // Set form values
       editForm.setFieldsValue({
         title: manga.title,
         author: manga.author,
@@ -152,7 +175,6 @@ const UploadedManga: React.FC = () => {
         genres: manga.genres,
       });
 
-      // Set image previews
       if (manga.posterUrl) {
         setPosterPreview(manga.posterUrl);
       }
@@ -160,7 +182,6 @@ const UploadedManga: React.FC = () => {
         setBackgroundPreview(manga.backgroundUrl);
       }
 
-      // Show modal
       setIsEditModalVisible(true);
     } catch (error) {
       console.error('Error fetching manga details:', error);
@@ -168,17 +189,14 @@ const UploadedManga: React.FC = () => {
     }
   };
 
-  // Function to handle image uploads
   const handleImageUpload = (
     info: { file: { originFileObj?: File } },
     type: 'poster' | 'background',
   ) => {
     if (info.file) {
-      // Get the file
       const file = info.file.originFileObj;
 
       if (file) {
-        // Create preview
         const reader = new FileReader();
         reader.onload = () => {
           if (type === 'poster') {
@@ -194,7 +212,6 @@ const UploadedManga: React.FC = () => {
     }
   };
 
-  // Function to handle form submission
   const handleSubmit = async () => {
     try {
       await editForm.validateFields();
@@ -220,8 +237,8 @@ const UploadedManga: React.FC = () => {
         description: values.description,
         overview: values.overview,
         genres: values.genres,
-        poster: posterFile || new File([], ''), // Pass empty file if not updated
-        background: backgroundFile || new File([], ''), // Pass empty file if not updated
+        poster: posterFile || new File([], ''), 
+        background: backgroundFile || new File([], ''),
         userId: currentUser.userID,
       };
 
@@ -238,7 +255,6 @@ const UploadedManga: React.FC = () => {
     }
   };
 
-  // Function to handle modal cancel
   const handleCancel = () => {
     setIsEditModalVisible(false);
     setEditingManga(null);
@@ -249,7 +265,6 @@ const UploadedManga: React.FC = () => {
     editForm.resetFields();
   };
 
-  // Function to open chapter upload modal
   const handleOpenChapterModal = (manga: MangaItem) => {
     setSelectedMangaForChapter(manga);
     chapterForm.resetFields();
@@ -258,7 +273,6 @@ const UploadedManga: React.FC = () => {
     setIsChapterModalVisible(true);
   };
 
-  // Function to handle chapter modal cancel
   const handleChapterModalCancel = () => {
     setIsChapterModalVisible(false);
     setSelectedMangaForChapter(null);
@@ -267,27 +281,21 @@ const UploadedManga: React.FC = () => {
     chapterForm.resetFields();
   };
 
-  // Function to handle chapter image uploads
   const handleChapterImageUpload = (info: { fileList: any[] }) => {
     const fileList = info.fileList;
 
-    // Process file list
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
 
-    // Process each file
     fileList.forEach((file: any) => {
-      // Only add if it's a valid file
       if (file.originFileObj && file.originFileObj instanceof File) {
         newFiles.push(file.originFileObj);
 
-        // Create preview URL
         if (!file.preview) {
           const reader = new FileReader();
           reader.onload = () => {
             const preview = reader.result as string;
             file.preview = preview;
-            // Update previews array
             setChapterFilePreviews(prev => {
               const updated = [...prev];
               const index = fileList.findIndex(f => f.uid === file.uid);
@@ -307,7 +315,6 @@ const UploadedManga: React.FC = () => {
     setChapterFiles(newFiles);
   };
 
-  // Submit chapter upload
   const handleChapterSubmit = async () => {
     try {
       await chapterForm.validateFields();
@@ -328,17 +335,14 @@ const UploadedManga: React.FC = () => {
       const chapterIndex = values.chapterIndex;
       const chapterTitle = values.title;
 
-      // Create form data
       const formData = new FormData();
       formData.append('chapter_index', chapterIndex);
       formData.append('title', chapterTitle);
 
-      // Add all chapter pages
       chapterFiles.forEach((file, index) => {
         formData.append(`pages`, file);
       });
 
-      // Upload the chapter
       await chapterService.addChapter(
         selectedMangaForChapter.id,
         chapterIndex,
@@ -347,14 +351,12 @@ const UploadedManga: React.FC = () => {
 
       message.success('Chapter uploaded successfully');
 
-      // Close modal and reset state
       setIsChapterModalVisible(false);
       setSelectedMangaForChapter(null);
       setChapterFiles([]);
       setChapterFilePreviews([]);
       chapterForm.resetFields();
 
-      // Refresh manga list to show updated chapter count
       fetchUploadedManga(currentPage, pageSize);
     } catch (error) {
       console.error('Error uploading chapter:', error);
@@ -364,7 +366,6 @@ const UploadedManga: React.FC = () => {
     }
   };
 
-  // Helper function to get genre color
   const getGenreColor = (genre: string) => {
     const colors: Record<string, string> = {
       ACTION: 'blue',
@@ -381,7 +382,6 @@ const UploadedManga: React.FC = () => {
     return colors[genre] || 'default';
   };
 
-  // Helper function to get status color
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       [MangaStatus.PENDING]: 'orange',
@@ -480,7 +480,6 @@ const UploadedManga: React.FC = () => {
                           />
                         </Link>
 
-                        {/* Manga details */}
                         <div className="ml-4 flex-grow flex flex-col justify-between">
                           <div>
                             <div className="flex justify-between">
@@ -508,7 +507,6 @@ const UploadedManga: React.FC = () => {
                               by {manga.author || 'Unknown Author'}
                             </div>
 
-                            {/* Genres */}
                             <div className="flex flex-wrap gap-1 mb-3">
                               {manga.genres &&
                                 manga.genres.slice(0, 3).map((genre, idx) => (
@@ -547,7 +545,7 @@ const UploadedManga: React.FC = () => {
                               </span>
                               <span className="flex items-center">
                                 <BookOutlined className="mr-1" />
-                                {manga.chapters?.length || 0} chapters
+                                {chapterCounts[manga.id] || 0} chapters
                               </span>
                             </div>
 
@@ -561,7 +559,7 @@ const UploadedManga: React.FC = () => {
                               </Button>
                               <Button
                                 type="primary"
-                                ghost
+                              ghost
                                 icon={<UploadOutlined />}
                                 onClick={() => handleOpenChapterModal(manga)}
                                 disabled={manga.status !== 'APPROVED'}
@@ -611,7 +609,6 @@ const UploadedManga: React.FC = () => {
         </div>
       </Content>
 
-      {/* Edit Manga Modal */}
       <Modal
         title="Edit Manga"
         open={isEditModalVisible}
@@ -792,7 +789,6 @@ const UploadedManga: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* Chapter Upload Modal */}
       <Modal
         title={`Upload New Chapter${
           selectedMangaForChapter ? ` for ${selectedMangaForChapter.title}` : ''

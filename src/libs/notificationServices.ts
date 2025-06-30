@@ -27,6 +27,41 @@ const LIST_NOTIFICATIONS_TEMPLATE = {
     const thisMoment = await momentValidate.getCurrentTimeInHours();
     return `Bạn đã bỏ theo dõi Manga ${managa.title} vào lúc ${thisMoment}`;
   },
+  statusChange: (mangaTitle: string, oldStatus: string, newStatus: string) => {
+    const getStatusDisplayName = (status: string) => {
+      switch (status.toUpperCase()) {
+        case 'APPROVED':
+          return 'Approved';
+        case 'PENDING':
+          return 'Pending Review';
+        case 'REJECTED':
+          return 'Rejected';
+        case 'HIDDEN':
+          return 'Hidden';
+        case 'DELETED':
+          return 'Deleted';
+        case 'UPDATE':
+          return 'Update Required';
+        default:
+          return status;
+      }
+    };
+
+    switch (newStatus.toUpperCase()) {
+      case 'APPROVED':
+        return `🎉 Tin vui! Manga của bạn "${mangaTitle}" đã được duyệt và hiện đang hiển thị!`;
+      case 'REJECTED':
+        return `❌ Manga của bạn "${mangaTitle}" đã bị từ chối. Vui lòng xem lại các hướng dẫn và thử lại.`;
+      case 'HIDDEN':
+        return `👁️ Manga của bạn "${mangaTitle}" đã bị ẩn khỏi chế độ công khai.`;
+      case 'UPDATE':
+        return `📝 Manga của bạn "${mangaTitle}" cần được cập nhật. Vui lòng kiểm tra và chỉnh sửa lại.`;
+      default:
+        return `📋 Trạng thái của manga "${mangaTitle}" đã được thay đổi từ ${getStatusDisplayName(
+          oldStatus,
+        )} sang ${getStatusDisplayName(newStatus)}.`;
+    }
+  },
 };
 
 const BASE_URL = '/notifications';
@@ -90,6 +125,26 @@ export const notificationServices = {
       userId,
       message,
       type: 'unfollowManga',
+    });
+    return response.data;
+  },
+
+  statusChangeNotification: async (
+    userId: number,
+    mangaTitle: string,
+    oldStatus: string,
+    newStatus: string,
+  ): Promise<Notification> => {
+    const message = LIST_NOTIFICATIONS_TEMPLATE.statusChange(
+      mangaTitle,
+      oldStatus,
+      newStatus,
+    );
+    console.log('Checking status change message:', message);
+    const response = await api.post(`${BASE_URL}`, {
+      userId,
+      message,
+      type: 'statusChange',
     });
     return response.data;
   },
