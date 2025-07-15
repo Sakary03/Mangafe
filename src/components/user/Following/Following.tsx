@@ -199,7 +199,7 @@ const Following: React.FC = () => {
               description="You haven't followed any manga yet"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
-            <Link to="/manga">
+            <Link to="/search/manga">
               <Button type="primary" className="mt-4">
                 Browse Manga
               </Button>

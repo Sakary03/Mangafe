@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table,
   Button,
@@ -17,16 +17,16 @@ import {
   Col,
   Statistic,
   Avatar,
+  Input,
 } from 'antd';
 import {
   UserOutlined,
   EditOutlined,
   DeleteOutlined,
   TeamOutlined,
-  UserAddOutlined,
   MailOutlined,
   SafetyOutlined,
-  IeOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAllUsersPaginated, getAllUsersForStats } from '../../../libs/userService';
@@ -34,6 +34,7 @@ import DashboardLayout from '../DashboardLayout';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { Search } = Input;
 
 interface UserData {
   id: number;
@@ -54,24 +55,40 @@ const UserList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [totalAdmins, setTotalAdmins] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPageSize, setCurrentPageSize] = useState<number>(10);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
   const [sortField, setSortField] = useState<string>('createdAt');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
 
-  const fetchUsers = async (page = 1, pageSize = 10, sort = 'createdAt') => {
+  const fetchUsers = useCallback(async (page = 1, pageSize = 10, sort = 'createdAt', search = '') => {
     try {
       setLoading(true);
       const offset = (page - 1) * pageSize;
       const response = await getAllUsersPaginated(offset, pageSize, sort);
       
-      setUsers(response.data);
+      let userData = response.data;
+      
+      // Apply search filter if search term exists
+      if (search.trim()) {
+        userData = userData.filter(user => 
+          user.fullName.toLowerCase().includes(search.toLowerCase()) ||
+          user.userName.toLowerCase().includes(search.toLowerCase()) ||
+          user.email.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+      
+      setUsers(userData);
+      setFilteredUsers(userData);
       setPagination({
-        ...pagination,
         current: page,
-        total: response.total || response.data.length,
+        pageSize: pageSize,
+        total: search.trim() ? userData.length : (response.total || response.data.length),
       });
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -79,11 +96,10 @@ const UserList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchTotalStats = async () => {
+  const fetchTotalStats = useCallback(async () => {
     try {
-      setLoading(true);
       const allUsers = await getAllUsersForStats();
       
       setTotalUsers(allUsers.length);
@@ -94,22 +110,40 @@ const UserList: React.FC = () => {
     } catch (error) {
       console.error('Error fetching user stats:', error);
       message.error('Failed to load user statistics');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchUsers(pagination.current, pagination.pageSize, sortField);
+    fetchUsers(currentPage, currentPageSize, sortField, searchTerm);
+  }, [fetchUsers, currentPage, currentPageSize, sortField, searchTerm]);
+
+  useEffect(() => {
     fetchTotalStats(); // Fetch total stats on component mount
-  }, [sortField]);
+  }, [fetchTotalStats]);
 
   const handleTableChange = (page: number, pageSize?: number) => {
-    fetchUsers(page, pageSize || pagination.pageSize, sortField);
+    setCurrentPage(page);
+    if (pageSize && pageSize !== currentPageSize) {
+      setCurrentPageSize(pageSize);
+    }
   };
 
   const handleSortChange = (value: string) => {
     setSortField(value);
+    // Reset to first page when sorting changes
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    // Reset to first page when searching
+    setCurrentPage(1);
+  };
+
+  const handleSearchClear = () => {
+    setSearchTerm('');
+    setCurrentPage(1);
   };
 
   const handleViewUser = (id: number) => {
@@ -124,8 +158,9 @@ const UserList: React.FC = () => {
     try {
       setLoading(true);
       // Implement your delete functionality here
+      console.log('Deleting user with id:', id);
       message.success('User deleted successfully');
-      fetchUsers(pagination.current, pagination.pageSize, sortField);
+      fetchUsers(currentPage, currentPageSize, sortField, searchTerm);
       fetchTotalStats(); // Re-fetch stats after deletion
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -185,7 +220,7 @@ const UserList: React.FC = () => {
         { text: 'Admin', value: 'ADMIN' },
         { text: 'User', value: 'USER' },
       ],
-      onFilter: (value: string, record: UserData) => record.role === value,
+      onFilter: (value: any, record: UserData) => record.role === value,
     },
     {
       title: 'Date of Birth',
@@ -239,23 +274,26 @@ const UserList: React.FC = () => {
           <TeamOutlined /> User Management
         </Title>
         <Space>
+          <Search
+            placeholder="Search users by name, username, or email"
+            allowClear
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onClear={handleSearchClear}
+            style={{ width: 300 }}
+            prefix={<SearchOutlined />}
+          />
           <Select
             defaultValue="createdAt"
             style={{ width: 200 }}
             onChange={handleSortChange}
+            value={sortField}
           >
             <Option value="fullName">Sort by Name</Option>
             <Option value="createdAt">Sort by Created Date</Option>
             <Option value="userName">Sort by Username</Option>
             <Option value="role">Sort by Role</Option>
           </Select>
-          <Button 
-            type="primary" 
-            onClick={() => navigate('/user/add')}
-            icon={<UserAddOutlined />}
-          >
-            Add New User
-          </Button>
         </Space>
       </div>
 

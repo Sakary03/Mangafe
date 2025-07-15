@@ -241,6 +241,9 @@ const UserHeader = () => {
           >
             TIN TỨC
           </Link>
+          <Link to="/search/manga" className="px-3 py-2 hover:text-white">
+            TÌM TRUYỆN
+          </Link>
         </div>
       </div>
 

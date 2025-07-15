@@ -205,7 +205,7 @@ const MangaChapterReader: React.FC = () => {
     },
     {
       title: 'Manga',
-      href: '/manga',
+      href: '/search/manga',
     },
     {
       title: mangaDetail.title,

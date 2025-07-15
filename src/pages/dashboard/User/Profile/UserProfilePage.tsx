@@ -238,9 +238,6 @@ const UserProfilePage: React.FC = () => {
                 >
                   Đổi mật khẩu
                 </Button>
-                <Button icon={<SettingOutlined />} type="default">
-                  Cài đặt
-                </Button>
                 <Link to="/auth/login">
                   <Button icon={<LogoutOutlined />} type="text" danger>
                     Đăng xuất
@@ -375,7 +372,10 @@ const UserProfilePage: React.FC = () => {
                       name="username"
                       label="Tên người dùng"
                       rules={[
-                        { required: true, message: 'Vui lòng nhập tên người dùng' },
+                        {
+                          required: true,
+                          message: 'Vui lòng nhập tên người dùng',
+                        },
                       ]}
                     >
                       <Input
@@ -467,7 +467,9 @@ const UserProfilePage: React.FC = () => {
                         <UserOutlined className="text-blue-600 text-lg" />
                       </div>
                       <div>
-                        <Text className="text-gray-500 text-sm">Tên người dùng</Text>
+                        <Text className="text-gray-500 text-sm">
+                          Tên người dùng
+                        </Text>
                         <div className="text-gray-900 font-medium">
                           {user.username}
                         </div>
@@ -503,9 +505,7 @@ const UserProfilePage: React.FC = () => {
                         <CalendarOutlined className="text-orange-600 text-lg" />
                       </div>
                       <div>
-                        <Text className="text-gray-500 text-sm">
-                          Ngày sinh
-                        </Text>
+                        <Text className="text-gray-500 text-sm">Ngày sinh</Text>
                         <div className="text-gray-900 font-medium">
                           {dayjs(user.date).format('MMMM D, YYYY')}
                         </div>
@@ -577,9 +577,7 @@ const UserProfilePage: React.FC = () => {
             >
               {followedManga.length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-gray-500">
-                    Bạn chưa theo dõi truyện nào
-                  </p>
+                  <p className="text-gray-500">Bạn chưa theo dõi truyện nào</p>
                   <Link to="/manga">
                     <Button type="primary" className="mt-4">
                       Khám phá truyện
@@ -723,7 +721,6 @@ const UserProfilePage: React.FC = () => {
                             {manga.status}
                           </Tag>
                         </div>
-
                         <div className="mt-2 flex flex-wrap gap-1">
                           {manga.genres.slice(0, 3).map((genre, idx) => (
                             <Tag key={idx} className="mr-1 mb-1">
@@ -735,26 +732,28 @@ const UserProfilePage: React.FC = () => {
                               +{manga.genres.length - 3}
                             </Tag>
                           )}
-                        </div>                          <div className="mt-3 flex justify-between items-center">
-                            <div className="text-xs text-gray-500 flex items-center">
-                              <span>
-                                Đã tạo{' '}
-                                {dayjs(manga.createdAt).format('DD/MM/YYYY')}
-                              </span>
-                              <div className="w-1 h-1 bg-gray-400 rounded-full mx-2"></div>
-                              <span>{manga.readTimes} lượt đọc</span>
-                            </div>
+                        </div>{' '}
+                        <div className="mt-3 flex justify-between items-center">
+                          <div className="text-xs text-gray-500 flex items-center">
+                            <span>
+                              Đã tạo{' '}
+                              {dayjs(manga.createdAt).format('DD/MM/YYYY')}
+                            </span>
+                            <div className="w-1 h-1 bg-gray-400 rounded-full mx-2"></div>
+                            <span>{manga.readTimes} lượt đọc</span>
+                          </div>
 
-                            <Space>
-                              <Link to={`/manga/edit/${manga.id}`}>
-                                <Button
-                                  type="text"
-                                  icon={<EditOutlined />}
-                                  size="small"
-                                >
-                                  Sửa
-                                </Button>
-                              </Link>
+                          <Space>
+                            <Link to={`/user/uploaded`}>
+                              <Button
+                                type="text"
+                                icon={<EditOutlined />}
+                                size="small"
+                              >
+                                Sửa
+                              </Button>
+                            </Link>
+                            <Link to={`/user/uploaded`}>
                               <Button
                                 type="text"
                                 danger
@@ -763,8 +762,9 @@ const UserProfilePage: React.FC = () => {
                               >
                                 Xóa
                               </Button>
-                            </Space>
-                          </div>
+                            </Link>
+                          </Space>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -851,12 +851,10 @@ const UserProfilePage: React.FC = () => {
           >
             <Input.Password />
           </Form.Item>
-          <Form.Item 
-            label="Mật khẩu mới" 
+          <Form.Item
+            label="Mật khẩu mới"
             name="newPassword"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu mới' },
-            ]}
+            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới' }]}
           >
             <Input.Password />
           </Form.Item>
@@ -870,9 +868,7 @@ const UserProfilePage: React.FC = () => {
                   if (!value || getFieldValue('newPassword') === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(
-                    new Error('Hai mật khẩu không khớp'),
-                  );
+                  return Promise.reject(new Error('Hai mật khẩu không khớp'));
                 },
               }),
             ]}

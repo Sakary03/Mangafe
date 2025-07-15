@@ -229,17 +229,6 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                     alignItems: 'center',
                   },
                 },
-                {
-                  key: 'userChapterUploaded',
-                  icon: <UploadOutlined style={{ fontSize: '18px' }} />,
-                  label: <span style={{ fontWeight: 500 }}>User Chapters</span>,
-                  style: {
-                    margin: '4px 0',
-                    height: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  },
-                },
               ],
             },
             {
